@@ -1,0 +1,27 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+case "$1" in
+
+  start)
+    bash ~/SAINT_PRIMAL/control/scripts/atlas_boot.sh
+    ;;
+
+  status)
+    bash ~/SAINT_PRIMAL/control/scripts/status.sh
+    ;;
+
+  restart)
+    pkill -f node
+    pkill -f vite
+    bash ~/SAINT_PRIMAL/control/scripts/atlas_boot.sh
+    ;;
+
+  logs)
+    tail -n 50 ~/SAINT_PRIMAL/control/logs/backend.log
+    ;;
+
+  *)
+    echo "Usage: atlas {start|status|restart|logs}"
+    ;;
+
+esac

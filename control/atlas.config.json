@@ -1,0 +1,16 @@
+{
+  "backend": {
+    "port": 3000,
+    "entry": "server.js",
+    "path": "~/SAINT_PRIMAL/backend"
+  },
+  "frontend": {
+    "port": 5173,
+    "entry": "vite",
+    "path": "~/SAINT_PRIMAL/frontend"
+  },
+  "ws": {
+    "enabled": true,
+    "endpoint": "ws://localhost:3000"
+  }
+}

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SAINT OMNIVEX — LIVE KERNEL</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+
+  <style>
+    body {
+      margin: 0;
+      background: #05070a;
+      color: #00ff99;
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    header {
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(0,255,153,0.2);
+    }
+
+    .title {
+      font-family: 'Orbitron';
+      font-weight: 900;
+      letter-spacing: 3px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .panel {
+      border: 1px solid rgba(0,255,153,0.2);
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    .big {
+      font-size: 28px;
+      font-family: 'Orbitron';
+    }
+
+    .buy { color: #00ff99; }
+    .sell { color: #ff3355; }
+    .hold { color: #999; }
+
+    .log {
+      height: 300px;
+      overflow: auto;
+      font-size: 12px;
+    }
+
+    .row {
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(0,255,153,0.05);
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="title">SAINT OMNIVEX LIVE</div>
+  <div id="status">CONNECTING...</div>
+</header>
+
+<div class="grid">
+
+  <div class="panel">
+    <h3>LIVE STATE</h3>
+    <div>Trades: <span id="trades">0</span></div>
+    <div>Blocked: <span id="blocked">0</span></div>
+    <div>PnL: <span id="pnl">0</span></div>
+  </div>
+
+  <div class="panel">
+    <h3>MARKET</h3>
+    <div class="big" id="price">--</div>
+    <div id="signal">HOLD</div>
+  </div>
+
+  <div class="panel" style="grid-column: span 2;">
+    <h3>LIVE FEED</h3>
+    <div class="log" id="log"></div>
+  </div>
+
+</div>
+
+<script src="./app.js"></script>
+
+</body>
+</html>
