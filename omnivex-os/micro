@@ -1,0 +1,21 @@
+export default function saint(bus) {
+
+	  bus.on("trade.request", (event) => {
+
+	  	    console.log("EXECUTING TRADE:", event.payload);
+
+	  	        bus.emit("trade.executed", {
+	  	        	      type: "trade.executed",
+	  	        	            payload: event.payload
+	  	        	                });
+
+	  	        	                  });
+
+	  	        	                    return {
+	  	        	                    	    onEvent: () => {}
+	  	        	                    	      };
+	  	        	                    	      }
+	  	        	                    }
+	  	        })
+	  })
+}
