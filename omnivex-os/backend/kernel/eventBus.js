@@ -1,19 +1,56 @@
-import { EventEmitter } from "events";
+/**
+ * OMNIVEX EVENT BUS (CORE KERNEL LAYER)
+ * FIXED: EventEmitter-based pub/sub system
+ */
 
-export function initEventBus() {
-  const bus = new EventEmitter();
+const EventEmitter = require("events");
 
-  // Safe emit wrapper (prevents undefined crashes)
-  bus.emitEvent = (type, payload = {}) => {
+class EventBus extends EventEmitter {
+  constructor() {
+    super();
+    this.setMaxListeners(1000);
+  }
+
+  /**
+   * Publish event to system
+   */
+  publish(eventType, payload) {
     const event = {
-      id: crypto.randomUUID(),
-      type,
-      payload,
+      type: eventType,
+      ...payload,
       ts: Date.now()
     };
 
-    bus.emit(type, event);
-  };
+    this.emit(eventType, event);
+    this.emit("*", event); // global stream
 
-  return bus;
+    return event;
+  }
+
+  /**
+   * Subscribe to event stream
+   */
+  subscribe(eventType, handler) {
+    this.on(eventType, handler);
+
+    return () => {
+      this.off(eventType, handler);
+    };
+  }
+
+  /**
+   * One-time subscription
+   */
+  once(eventType, handler) {
+    this.once(eventType, handler);
+  }
+
+  /**
+   * Debug helper
+   */
+  debug(handler) {
+    this.on("*", handler);
+  }
 }
+
+module.exports = new EventBus();

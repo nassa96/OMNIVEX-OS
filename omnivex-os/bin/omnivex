@@ -1,0 +1,71 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+ROOT=~/SAINT_PRIMAL/omnivex-os
+
+source $ROOT/runtime/lock.sh
+
+BACKEND_DIR="$ROOT/backend"
+FRONTEND_DIR="$ROOT/frontend"
+
+BACKEND_LOG="$ROOT/backend.log"
+FRONTEND_LOG="$ROOT/frontend.log"
+
+start_backend() {
+  cd $BACKEND_DIR || exit
+  node server.js >> $BACKEND_LOG 2>&1 &
+}
+
+start_frontend() {
+  cd $FRONTEND_DIR || exit
+  npm run dev >> $FRONTEND_LOG 2>&1 &
+}
+
+backend_alive() {
+  curl -s http://localhost:3000/snapshot > /dev/null
+}
+
+case "$1" in
+
+start)
+
+  ./runtime/lock.sh acquire || exit 1
+
+  echo "🚀 OMNIVEX SINGLE SOURCE RUNTIME STARTING"
+
+  # kill any leftover rogue processes
+  pkill -f "node server.js" 2>/dev/null
+  pkill -f "vite" 2>/dev/null
+
+  start_backend
+  sleep 2
+  start_frontend
+
+  echo "=================================="
+  echo "OMNIVEX LOCKED RUNTIME ACTIVE"
+  echo "Backend : http://localhost:3000"
+  echo "Frontend: http://localhost:5173"
+  echo "=================================="
+
+  while true; do
+    backend_alive || (echo "⚠ Backend restart" && start_backend)
+    sleep 5
+  done
+  ;;
+
+stop)
+  echo "🛑 STOPPING OMNIVEX"
+
+  pkill -f "node server.js"
+  pkill -f "vite"
+
+  ./runtime/lock.sh release
+  ;;
+
+logs)
+  tail -f $BACKEND_LOG
+  ;;
+
+*)
+  echo "Usage: omnivex {start|stop|logs}"
+  ;;
+esac

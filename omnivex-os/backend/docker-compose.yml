@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+
+  redis:
+    image: redis:7
+    container_name: omnivex_redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:15
+    container_name: omnivex_db
+    restart: always
+    environment:
+      POSTGRES_USER: omnivex
+      POSTGRES_PASSWORD: omnivex_pass
+      POSTGRES_DB: omnivex
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build: ./backend
+    container_name: omnivex_api
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://omnivex:omnivex_pass@postgres:5432/omnivex
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "3000:3000"
+    depends_on:
+      - redis
+      - postgres
+
+  market_worker:
+    build: ./backend
+    command: node workers/market.worker.js
+    restart: always
+    depends_on:
+      - redis
+
+  signal_worker:
+    build: ./backend
+    command: node workers/signal.worker.js
+    restart: always
+    depends_on:
+      - redis
+
+  execution_worker:
+    build: ./backend
+    command: node workers/execution.worker.js
+    restart: always
+    depends_on:
+      - redis
+
+  frontend:
+    build: ./frontend
+    container_name: omnivex_ui
+    restart: always
+    ports:
+      - "5173:5173"
+
+volumes:
+  pgdata:

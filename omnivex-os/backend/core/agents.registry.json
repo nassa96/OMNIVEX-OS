@@ -1,0 +1,148 @@
+{
+  "system": "OMNIVEX_OS_PRIME",
+  "version": "1.0.0",
+  "design_principle": "event_driven_agent_mesh",
+
+  "agents": {
+    "AURIN": {
+      "role": "orchestrator",
+      "description": "Master routing layer for all agent communication and system coordination.",
+      "responsibilities": [
+        "route_events",
+        "manage_pipeline_flow",
+        "resolve_agent_conflicts",
+        "maintain_system_state"
+      ],
+      "inputs": ["ELOHIM", "MERCURY", "SOPHIA"],
+      "outputs": ["AEGIS", "SAINT", "DROPSPACE"],
+      "upstream": [],
+      "downstream": ["SOPHIA", "AEGIS", "SAINT"]
+    },
+
+    "SOPHIA": {
+      "role": "intelligence_engine",
+      "description": "Signal generation and market interpretation engine.",
+      "responsibilities": [
+        "analyze_market_data",
+        "generate_signals",
+        "classify_trend_regime",
+        "score_confidence"
+      ],
+      "inputs": ["MERCURY"],
+      "outputs": ["AURIN", "AEGIS"],
+      "upstream": ["MERCURY"],
+      "downstream": ["AEGIS", "SAINT"]
+    },
+
+    "AEGIS": {
+      "role": "risk_governor",
+      "description": "System-wide risk enforcement and capital protection layer.",
+      "responsibilities": [
+        "validate_signals",
+        "enforce_position_limits",
+        "apply_drawdown_controls",
+        "block_high_risk_execution"
+      ],
+      "inputs": ["SOPHIA"],
+      "outputs": ["SAINT"],
+      "upstream": ["SOPHIA"],
+      "downstream": ["SAINT"]
+    },
+
+    "SAINT": {
+      "role": "execution_kernel",
+      "description": "Trade execution and order lifecycle management system.",
+      "responsibilities": [
+        "execute_orders",
+        "manage_order_lifecycle",
+        "simulate_slippage",
+        "report_execution_state"
+      ],
+      "inputs": ["AEGIS"],
+      "outputs": ["CHRONICLE"],
+      "upstream": ["AEGIS"],
+      "downstream": ["CHRONICLE"]
+    },
+
+    "ELOHIM": {
+      "role": "data_fusion_engine",
+      "description": "Multi-source market ingestion and normalization layer.",
+      "responsibilities": [
+        "ingest_market_feeds",
+        "normalize_data",
+        "aggregate_sources",
+        "emit_market_state"
+      ],
+      "inputs": [],
+      "outputs": ["MERCURY"],
+      "upstream": [],
+      "downstream": ["MERCURY"]
+    },
+
+    "MERCURY": {
+      "role": "stream_normalizer",
+      "description": "Real-time stream processing and liquidity mapping layer.",
+      "responsibilities": [
+        "normalize_streams",
+        "detect_liquidity_shifts",
+        "emit_structured_ticks"
+      ],
+      "inputs": ["ELOHIM"],
+      "outputs": ["SOPHIA"],
+      "upstream": ["ELOHIM"],
+      "downstream": ["SOPHIA"]
+    },
+
+    "CHRONICLE": {
+      "role": "memory_system",
+      "description": "Persistent system memory, replay engine, and audit ledger.",
+      "responsibilities": [
+        "store_events",
+        "enable_replay",
+        "maintain_audit_log",
+        "track_system_state"
+      ],
+      "inputs": ["SAINT"],
+      "outputs": [],
+      "upstream": ["SAINT"],
+      "downstream": []
+    },
+
+    "TARTARUS": {
+      "role": "simulation_engine",
+      "description": "Adversarial testing and strategy stress simulation layer.",
+      "responsibilities": [
+        "simulate_market_conditions",
+        "stress_test_strategies",
+        "generate_counterfactuals"
+      ],
+      "inputs": ["CHRONICLE"],
+      "outputs": ["SOPHIA"],
+      "upstream": ["CHRONICLE"],
+      "downstream": ["SOPHIA"]
+    },
+
+    "DROPSPACE": {
+      "role": "distribution_layer",
+      "description": "External propagation layer for signals, monetization, and social automation.",
+      "responsibilities": [
+        "publish_signals",
+        "trigger_social_distribution",
+        "monetize_intelligence_outputs"
+      ],
+      "inputs": ["AURIN"],
+      "outputs": [],
+      "upstream": ["AURIN"],
+      "downstream": []
+    }
+  },
+
+  "architecture_notes": {
+    "execution_flow": [
+      "ELOHIM → MERCURY → SOPHIA → AURIN → AEGIS → SAINT → CHRONICLE",
+      "CHRONICLE → TARTARUS → SOPHIA (feedback loop)",
+      "AURIN → DROPSPACE (external propagation)"
+    ],
+    "system_goal": "self_improving_adaptive_capital_intelligence_organism"
+  }
+}

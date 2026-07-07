@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ATLAS STREAM</title>
+</head>
+<body style="background:#0b0b0b;color:#00ff99;font-family:monospace;">
+  <h3>OMNIVEX ATLAS LIVE FEED</h3>
+  <pre id="log"></pre>
+
+  <script>
+    const log = document.getElementById("log");
+
+    const ws = new WebSocket("ws://localhost:3000");
+
+    ws.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+      log.textContent =
+        JSON.stringify(data, null, 2) + "\n\n" + log.textContent;
+    };
+  </script>
+</body>
+</html>

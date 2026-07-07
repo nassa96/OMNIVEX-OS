@@ -1,0 +1,75 @@
+:root {
+  --bg: #050505;
+  --panel: #0f1115;
+  --panel2: #12151c;
+  --text: #d0d3d7;
+  --muted: #6b7280;
+
+  --green: #00ff99;
+  --red: #ff4d4d;
+  --blue: #4da6ff;
+  --gold: #d4af37;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, sans-serif;
+  overflow: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.atlas-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  height: 100vh;
+}
+
+/* SIDEBAR */
+.atlas-sidebar {
+  background: var(--panel);
+  border-right: 1px solid #1f2937;
+  padding: 16px;
+}
+
+/* MAIN */
+.atlas-main {
+  display: flex;
+  flex-direction: column;
+}
+
+/* TOP BAR */
+.atlas-topbar {
+  height: 48px;
+  background: var(--panel2);
+  border-bottom: 1px solid #1f2937;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 12px;
+}
+
+/* TERMINAL */
+.atlas-terminal {
+  flex: 1;
+  padding: 16px;
+  font-family: monospace;
+  font-size: 13px;
+  overflow-y: auto;
+}
+
+/* STATUS BAR */
+.atlas-status {
+  height: 28px;
+  border-top: 1px solid #1f2937;
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+}

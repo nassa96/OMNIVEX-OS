@@ -1,0 +1,33 @@
+body {
+  margin: 0;
+  font-family: monospace;
+  background: #050505;
+  color: #00ff99;
+}
+
+.app {
+  padding: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.card {
+  background: #0f1115;
+  padding: 15px;
+  border: 1px solid #1f1f1f;
+  border-radius: 10px;
+}
+
+.feed {
+  max-height: 500px;
+  overflow: auto;
+}
+
+.event {
+  border-bottom: 1px solid #222;
+  padding: 10px 0;
+}

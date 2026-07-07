@@ -1,0 +1,8 @@
+./frontend/vite.config.js
+./frontend/frontend/_archive/app/vite.config.js
+./frontend/frontend/_archive/imperium-ui/vite.config.js
+./backend/frontend/app/vite.config.js
+./atlas-ui/vite.config.js
+./frontend-v3/vite.config.js
+./frontend-v2/vite.config.js
+./omnivex-os/frontend/vite.config.js

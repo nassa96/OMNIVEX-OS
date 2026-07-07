@@ -1,0 +1,7 @@
+{
+  "canonical_runtime": "server.cjs",
+  "entrypoint": "backend/server.cjs",
+  "start_command": "node backend/start.cjs",
+  "port": 3000,
+  "mode": "production_locked"
+}

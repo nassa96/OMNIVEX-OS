@@ -1,0 +1,4 @@
+* 394d510 (HEAD -> recovery/session-night-build) RECOVERY: full Omnivex v2 engine + SAINT expansion session
+* f7368bb (origin/main, main) SYSTEM: enforce clean git boundaries and ignore runtime artifacts
+* 7041eae Add OMNIVEX OS production README and architecture overview
+* 411ae46 SAINT v1.0 - Omnivex core trading engine + Dropspace integration

@@ -1,0 +1,120 @@
+[
+  {
+    "timestamp": 1781247214423,
+    "event": {
+      "signal": {
+        "type": "SOPHIA_SIGNAL",
+        "symbol": "BTC",
+        "price": 76005.152852564,
+        "prev": 76000,
+        "momentum": 0.00006780069163161036,
+        "signal": "HOLD"
+      },
+      "risk": {
+        "type": "AEGIS_RISK",
+        "volatility": 5.152852564002387,
+        "risk": "LOW"
+      },
+      "decision": "HOLD",
+      "market": {
+        "prevBTC": 76000,
+        "BTC": 76005.152852564
+      }
+    }
+  },
+  {
+    "timestamp": 1781247215417,
+    "event": {
+      "signal": {
+        "type": "SOPHIA_SIGNAL",
+        "symbol": "BTC",
+        "price": 76007.30679353506,
+        "prev": 76005.152852564,
+        "momentum": 0.000028339407135083826,
+        "signal": "HOLD"
+      },
+      "risk": {
+        "type": "AEGIS_RISK",
+        "volatility": 2.153940971053089,
+        "risk": "LOW"
+      },
+      "decision": "HOLD",
+      "market": {
+        "prevBTC": 76005.152852564,
+        "BTC": 76007.30679353506
+      }
+    }
+  },
+  {
+    "timestamp": 1781247299676,
+    "event": {
+      "ts": 1781247299667,
+      "signal": {
+        "type": "SOPHIA_SIGNAL",
+        "symbol": "BTC",
+        "price": 75990.90494184771,
+        "prev": 76000,
+        "momentum": -0.00011967181779331631,
+        "signal": "HOLD"
+      },
+      "risk": {
+        "type": "AEGIS_RISK",
+        "volatility": 9.09505815229204,
+        "risk": "LOW"
+      },
+      "decision": "HOLD",
+      "market": {
+        "prevBTC": 76000,
+        "BTC": 75990.90494184771
+      }
+    }
+  },
+  {
+    "timestamp": 1781247300670,
+    "event": {
+      "ts": 1781247300668,
+      "signal": {
+        "type": "SOPHIA_SIGNAL",
+        "symbol": "BTC",
+        "price": 75980.8402879731,
+        "prev": 75990.90494184771,
+        "momentum": -0.00013244550623932913,
+        "signal": "HOLD"
+      },
+      "risk": {
+        "type": "AEGIS_RISK",
+        "volatility": 10.064653874607757,
+        "risk": "LOW"
+      },
+      "decision": "HOLD",
+      "market": {
+        "prevBTC": 75990.90494184771,
+        "BTC": 75980.8402879731
+      }
+    }
+  },
+  {
+    "timestamp": 1781247301673,
+    "event": {
+      "ts": 1781247301671,
+      "signal": {
+        "type": "SOPHIA_SIGNAL",
+        "symbol": "BTC",
+        "price": 75978.74274831613,
+        "prev": 75980.8402879731,
+        "momentum": -0.000027606165567797766,
+        "signal": "HOLD"
+      },
+      "risk": {
+        "type": "AEGIS_RISK",
+        "volatility": 2.0975396569701843,
+        "risk": "LOW"
+      },
+      "decision": "HOLD",
+      "market": {
+        "prevBTC": 75980.8402879731,
+        "BTC": 75978.74274831613
+      }
+    }
+  }
+]

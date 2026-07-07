@@ -1,0 +1,2 @@
+origin	https://github.com/nassa96/OMNIVEX-OS.git (fetch)
+origin	https://github.com/nassa96/OMNIVEX-OS.git (push)

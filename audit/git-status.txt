@@ -1,0 +1,273 @@
+On branch recovery/session-night-build
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	deleted:    agents/sophia/index.js
+	deleted:    atlas.boot.js
+	modified:   backend/agents/aegis/index.js
+	modified:   backend/agents/elohim/index.js
+	modified:   backend/agents/sophia/index.js
+	deleted:    backend/core/aegis.js
+	modified:   backend/core/sophia.js
+	modified:   backend/engines/aegis.js
+	modified:   backend/engines/elohim.js
+	modified:   backend/engines/saint.js
+	modified:   backend/engines/sophia.js
+	modified:   backend/market/providers/coinbase.connector.js
+	modified:   backend/package-lock.json
+	modified:   backend/package.json
+	deleted:    backend/server.js
+	modified:   backend/websocket/stream.js
+	deleted:    core/sophia.js
+	deleted:    frontend/imperium-ui/.gitignore
+	deleted:    frontend/imperium-ui/README.md
+	deleted:    frontend/imperium-ui/eslint.config.js
+	deleted:    frontend/imperium-ui/imperium-orchestrator-v2.sh
+	deleted:    frontend/imperium-ui/imperium-orchestrator.sh
+	deleted:    frontend/imperium-ui/index.html
+	deleted:    frontend/imperium-ui/package-lock.json
+	deleted:    frontend/imperium-ui/package.json
+	deleted:    frontend/imperium-ui/public/favicon.svg
+	deleted:    frontend/imperium-ui/public/icons.svg
+	deleted:    frontend/imperium-ui/src/App.css
+	deleted:    frontend/imperium-ui/src/App.jsx
+	deleted:    frontend/imperium-ui/src/api.js
+	deleted:    frontend/imperium-ui/src/assets/hero.png
+	deleted:    frontend/imperium-ui/src/assets/react.svg
+	deleted:    frontend/imperium-ui/src/assets/vite.svg
+	deleted:    frontend/imperium-ui/src/index.css
+	deleted:    frontend/imperium-ui/src/main.jsx
+	deleted:    frontend/imperium-ui/vite.config.js
+	modified:   frontend/src/App.jsx
+	modified:   frontend/vite.config.js
+	modified:   omnivex-os/backend/agents/aegis.js
+	modified:   omnivex-os/backend/agents/prometheus.js
+	modified:   omnivex-os/backend/agents/saint.js
+	modified:   omnivex-os/backend/kernel/eventBus.js
+	modified:   omnivex-os/backend/kernel/loader.js
+	modified:   omnivex-os/backend/server.js
+	modified:   omnivex-os/package-lock.json
+	modified:   omnivex-os/package.json
+	modified:   package-lock.json
+	modified:   package.json
+	modified:   server.js
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	atlas-ui/
+	atlas.boot.cjs
+	atlas.client.html
+	audit/
+	backend/EOF
+	backend/STATE.equity
+	backend/STATE.pnl
+	backend/agents/aegis.js
+	backend/agents/mercury.js
+	backend/agents/saint.js
+	backend/agents/sophia.js
+	backend/braintrust.js
+	backend/bus/
+	backend/config/env.js
+	backend/core/AEGIS.js
+	backend/core/CHRONICLE.js
+	backend/core/ELOHIM.js
+	backend/core/LEDGER.js
+	backend/core/PORTFOLIO.js
+	backend/core/SAINT.js
+	backend/core/SOPHIA.js
+	backend/core/STREAMCORE.js
+	backend/core/aegis/
+	backend/core/agent.contract.js
+	backend/core/agents/
+	backend/core/auryn/
+	backend/core/braintrust.js
+	backend/core/capital/
+	backend/core/chronicle.js
+	backend/core/chronicle/
+	backend/core/config/
+	backend/core/elohim/
+	backend/core/engineContract.js
+	backend/core/engines/
+	backend/core/eventBus.js
+	backend/core/execution/
+	backend/core/feeds/
+	backend/core/forge/
+	backend/core/health/
+	backend/core/intelligence/
+	backend/core/kernel/
+	backend/core/learning/
+	backend/core/market/
+	backend/core/memory/
+	backend/core/mercury.js
+	backend/core/network/
+	backend/core/normalizeEvent.js
+	backend/core/opportunity/
+	backend/core/orchestration/
+	backend/core/orchestrator.js
+	backend/core/portfolio/
+	backend/core/prometheus/
+	backend/core/regime/
+	backend/core/registry/
+	backend/core/replay/
+	backend/core/risk/
+	backend/core/rl/
+	backend/core/runtimeFlags.js
+	backend/core/schema.js
+	backend/core/sophia/
+	backend/core/strategies.js
+	backend/core/strategy/
+	backend/core/stream.js
+	backend/core/streamBuffer.js
+	backend/core/swarm/
+	backend/core/telemetry/
+	backend/core/validateEvent.js
+	backend/core/wsHub.js
+	backend/data/chronicle.json
+	backend/data/chronicle.jsonl
+	backend/data/chronicle.log.json
+	backend/data/chronicle/
+	backend/datafeeds/
+	backend/engines/aegis.policy.js
+	backend/engines/agentCompetition.js
+	backend/engines/agentEvolution.js
+	backend/engines/autotuner.js
+	backend/engines/backtest.js
+	backend/engines/capitalRotation.js
+	backend/engines/chronicle.js
+	backend/engines/consensus.js
+	backend/engines/core/
+	backend/engines/correlation.js
+	backend/engines/decisionTrace.js
+	backend/engines/evolution.js
+	backend/engines/executionState.js
+	backend/engines/learning.js
+	backend/engines/market.js
+	backend/engines/memecoinDetector.js
+	backend/engines/mercury.js
+	backend/engines/momentum.js
+	backend/engines/orderBook.js
+	backend/engines/regime.js
+	backend/engines/replay.js
+	backend/engines/replayBuffer.js
+	backend/engines/replayEngine.js
+	backend/engines/riskGate.js
+	backend/engines/strategyHeatmap.js
+	backend/engines/strategySwitcher.js
+	backend/engines/stress.js
+	backend/engines/stressTest.js
+	backend/engines/ui/
+	backend/execution/exchangeRouter.js
+	backend/execution/exchanges/
+	backend/execution/execution.interface.js
+	backend/execution/executionNormalizer.js
+	backend/execution/executionRouter.js
+	backend/execution/executionState.js
+	backend/execution/ledger/
+	backend/execution/orderExecutor.js
+	backend/execution/replay/
+	backend/execution/state/
+	backend/execution/stateMachine.js
+	backend/execution/stateMachine/
+	backend/export
+	backend/forge.js
+	backend/frontend/
+	backend/fusion/
+	backend/kernel/
+	backend/market/binance.js
+	backend/market/feed.js
+	backend/return
+	backend/routes/
+	backend/runtime/
+	backend/server.cjs
+	backend/setup_canonical_ai_layers.sh
+	backend/sophia.js
+	backend/state.js
+	backend/}
+	boot.sh
+	data/
+	docs/
+	frontend-v2/
+	frontend-v3/
+	frontend/atlas.terminal.js
+	frontend/atlas.ui.js
+	frontend/frontend/
+	frontend/src/ws.js
+	omnivex-os/Saint-Dashboard/
+	omnivex-os/backend/Procfile
+	omnivex-os/backend/agents/aegis/
+	omnivex-os/backend/agents/aurin/
+	omnivex-os/backend/agents/chronicle.js
+	omnivex-os/backend/agents/ledger/
+	omnivex-os/backend/agents/prometheus/
+	omnivex-os/backend/agents/saint/
+	omnivex-os/backend/agents/sophia/
+	omnivex-os/backend/backend/
+	omnivex-os/backend/bridge/
+	omnivex-os/backend/chronicle/
+	omnivex-os/backend/core/
+	omnivex-os/backend/docker-compose.yml
+	omnivex-os/backend/engines/
+	omnivex-os/backend/eventBus.js
+	omnivex-os/backend/execution/
+	omnivex-os/backend/gateway/
+	omnivex-os/backend/growth/
+	omnivex-os/backend/kernel/aegis/
+	omnivex-os/backend/kernel/aurin/
+	omnivex-os/backend/kernel/aurinGovernor.js
+	omnivex-os/backend/kernel/backtestEngine.js
+	omnivex-os/backend/kernel/bootstrap/
+	omnivex-os/backend/kernel/bootstrapEngine.js
+	omnivex-os/backend/kernel/capitalEngine.js
+	omnivex-os/backend/kernel/capitalRotationEngine.js
+	omnivex-os/backend/kernel/chronicle/
+	omnivex-os/backend/kernel/coreKernel.js
+	omnivex-os/backend/kernel/dropspace/
+	omnivex-os/backend/kernel/elohimOrchestrator.js
+	omnivex-os/backend/kernel/env.js
+	omnivex-os/backend/kernel/eventContract.js
+	omnivex-os/backend/kernel/eventbus/
+	omnivex-os/backend/kernel/executionContract.js
+	omnivex-os/backend/kernel/learning/
+	omnivex-os/backend/kernel/marketOverlordEngine.js
+	omnivex-os/backend/kernel/memory/
+	omnivex-os/backend/kernel/mercuryFeed.js
+	omnivex-os/backend/kernel/mercuryStreamCore.js
+	omnivex-os/backend/kernel/mutationEngine.js
+	omnivex-os/backend/kernel/mutationKernel.js
+	omnivex-os/backend/kernel/nervous/
+	omnivex-os/backend/kernel/omegaConsciousness.js
+	omnivex-os/backend/kernel/omegaMergeMode.js
+	omnivex-os/backend/kernel/portAllocator.js
+	omnivex-os/backend/kernel/processLock.js
+	omnivex-os/backend/kernel/registry.js
+	omnivex-os/backend/kernel/signalContract.js
+	omnivex-os/backend/kernel/sophia/
+	omnivex-os/backend/kernel/stateCore.js
+	omnivex-os/backend/kernel/tartarus/
+	omnivex-os/backend/kernel/telemetry.js
+	omnivex-os/backend/ledger/
+	omnivex-os/backend/package-lock.json
+	omnivex-os/backend/package.json
+	omnivex-os/backend/routes/
+	omnivex-os/backend/server.cjs
+	omnivex-os/backend/services/
+	omnivex-os/backend/start.sh
+	omnivex-os/backend/state.js
+	omnivex-os/backend/state/
+	omnivex-os/backend/tartarus/
+	omnivex-os/backend/tmp_import_patch.txt
+	omnivex-os/bin/
+	omnivex-os/frontend/
+	omnivex-os/init.sh
+	omnivex-os/ngrok
+	omnivex-os/ngrok-stable-linux-arm64.zip
+	omnivex-os/runtime/
+	omnivex-os/start.sh
+	scripts/boot.prod.cjs
+	scripts/boot.sh
+	scripts/control-plane.sh
+	scripts/omnivex.sh
+	src/
+	stop.sh
+
+no changes added to commit (use "git add" and/or "git commit -a")

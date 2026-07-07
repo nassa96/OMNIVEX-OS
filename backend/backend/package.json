@@ -1,0 +1,11 @@
+{
+  "name": "saint-primal-backend",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "main": "runtime/canonicalRuntime.cjs",
+  "scripts": {
+    "start": "node runtime/canonicalRuntime.cjs",
+    "dev": "node runtime/canonicalRuntime.cjs"
+  },
+  "dependencies": {}
+}

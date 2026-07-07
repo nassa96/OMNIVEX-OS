@@ -1,0 +1,4 @@
+./backend/server.cjs
+./omnivex-os/backend/server.cjs
+./omnivex-os/backend/backend/server.cjs
+./omnivex-os/backend/node_modules/@electric-sql/pglite-socket/dist/scripts/server.cjs

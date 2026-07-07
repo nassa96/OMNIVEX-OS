@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: saint-os
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: saint
+  template:
+    metadata:
+      labels:
+        app: saint
+    spec:
+      containers:
+        - name: saint-core
+          image: saint/v81
+          ports:
+            - containerPort: 3000
