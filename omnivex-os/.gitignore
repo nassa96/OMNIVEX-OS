@@ -1,0 +1,13 @@
+# Runtime memory
+backend/kernel/memory/chronicle.events.json
+
+# Local backups
+../omnivex-os-BACKUP-*/
+
+# Logs
+logs/
+*.log
+
+# Node
+node_modules/
+npm-debug.log*
