@@ -1,131 +1,279 @@
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
-const { WebSocketServer } = require("ws");
+const WebSocket = require("ws");
 
-const Mercury = require("./core/mercury");
-const Cerberus = require("./core/cerberus");
-const Sophia = require("./core/sophia");
-const Tartarus = require("./core/tartarus");
-const Forge = require("./core/forge");
-const Chronicle = require("./core/chronicle");
-const WarEngine = require("./core/war");
-const Elohim = require("./core/elohim");
-const Saint = require("./core/saint");
-const Aegis = require("./core/aegis");
+
+const runtime = require("./kernel/runtime/omnivexRuntime");
+const agentRegistry = require("./kernel/registry/registerAgents");
+
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
+
+
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
 
-// CORE
-const mercury = new Mercury();
-const chronicle = new Chronicle();
-const forge = new Forge();
 
-const cerberus = new Cerberus(mercury, chronicle);
-const sophia = new Sophia();
-const tartarus = new Tartarus();
 
-const war = new WarEngine(forge);
-const elohim = new Elohim(forge);
-const saint = new Saint(forge, chronicle);
-const aegis = new Aegis(forge);
+const wss = new WebSocket.Server({
+    server
+});
 
-function broadcast(data) {
-  const msg = JSON.stringify(data);
-  wss.clients.forEach(c => {
-    if (c.readyState === 1) c.send(msg);
-  });
-}
 
-// =====================
-// COSMIC PIPELINE
-// =====================
-async function loop() {
-  try {
-    const market = await mercury.scan();
 
-    const cer = await cerberus.tick(market);
-    const sop = sophia.analyze(market);
-    const tar = tartarus.disrupt(market);
+wss.on("connection",(ws)=>{
 
-    const merged = [...cer, ...sop, ...tar];
+    console.log("[WS] CLIENT CONNECTED");
 
-    const warResult = war.resolve(merged);
-    const elohimDecision = elohim.evaluate(warResult);
 
-    const aegisDecision = aegis.evaluate(elohimDecision, saint);
+    ws.send(JSON.stringify({
 
-    const saintResult = saint.execute(
-      elohimDecision,
-      market,
-      aegisDecision
-    );
+        type:"VEYRONIX_CONNECTED",
 
-    const leaderboard = forge.leaderboard();
+        system:"OMNIVEX_OS_PRIME",
 
-    chronicle.write({
-      type: "COSMIC_TICK",
-      war: warResult,
-      elohim: elohimDecision,
-      aegis: aegisDecision,
-      saint: saintResult,
-      leaderboard,
-      ts: Date.now()
+        timestamp:Date.now()
+
+    }));
+
+});
+
+
+
+
+
+// ======================================
+// HEALTH
+// ======================================
+
+app.get(
+"/health",
+(req,res)=>{
+
+
+    const state = runtime.status();
+
+
+    res.json({
+
+        system:"VEYRONIX_ENGINE",
+
+        kernel:"OMNIVEX_OS_PRIME",
+
+        status:state.status,
+
+        heartbeat:state.heartbeat,
+
+        agents:Object.keys(
+            state.agents || {}
+        ).length,
+
+        market:state.market,
+
+        signal:state.signal,
+
+        risk:state.risk,
+
+        execution:state.execution,
+
+        timestamp:Date.now()
+
     });
 
-    broadcast({
-      type: "COSMIC_STATE",
-      war: warResult,
-      elohim: elohimDecision,
-      aegis: aegisDecision,
-      saint: saintResult,
-      leaderboard
+
+});
+
+
+
+
+
+
+// ======================================
+// RUNTIME STATE
+// ======================================
+
+
+app.get(
+"/api/runtime/state",
+(req,res)=>{
+
+
+    res.json({
+
+        system:"OMNIVEX_OS_PRIME",
+
+        runtime:
+        runtime.status()
+
     });
 
-    console.log(
-      "[COSMIC]",
-      "risk:",
-      aegisDecision.riskScore.toFixed(3),
-      "| blocked:",
-      saintResult.blocked
-    );
 
-  } catch (e) {
-    console.error("[COSMIC ERROR]", e.message);
-  }
+});
+
+
+
+
+
+
+
+// ======================================
+// RUNTIME AGENTS
+// FULL 16 AGENT RUNTIME VIEW
+// ======================================
+
+
+app.get(
+"/api/runtime/agents",
+(req,res)=>{
+
+
+try{
+
+
+    const state =
+    runtime.status();
+
+
+
+    res.json({
+
+
+        total:
+        Object.keys(
+            state.agents || {}
+        ).length,
+
+
+
+        agents:
+
+
+        Object.entries(
+            state.agents || {}
+        )
+        .map(([name,data])=>({
+
+
+            name,
+
+
+            status:
+            data.status,
+
+
+            role:
+            data.role,
+
+
+            heartbeat:
+            data.heartbeat ||
+            "ONLINE"
+
+
+        })),
+
+
+
+        timestamp:
+        Date.now()
+
+
+    });
+
+
+
 }
 
-setInterval(loop, 3000);
+catch(err){
 
-// =====================
-// API
-// =====================
-app.get("/health", (req, res) => {
-  res.json({
-    system: "OMNIVEX_COSMIC_GOVERNED",
-    status: "ONLINE",
-    layers: ["WAR", "ELOHIM", "AEGIS", "SAINT"]
-  });
+
+    res.status(500).json({
+
+        error:
+        err.message
+
+    });
+
+
+}
+
+
 });
 
-app.get("/leaderboard", (req, res) => {
-  res.json(forge.leaderboard());
+
+
+
+
+
+
+// ======================================
+// SYSTEM INFO
+// ======================================
+
+
+app.get(
+"/api/system",
+(req,res)=>{
+
+
+res.json({
+
+    name:"VEYRONIX",
+
+    engine:
+    "OMNIVEX_OS_PRIME",
+
+    runtime:
+    runtime.status(),
+
+    timestamp:
+    Date.now()
+
+
 });
 
-app.get("/chronicle", (req, res) => {
-  res.json(chronicle.get());
+
 });
 
-const PORT = 3000;
-server.listen(PORT, () => {
-  console.log("==================================");
-  console.log(" OMNIVEX COSMIC GOVERNED ENGINE");
-  console.log(" WAR → ELOHIM → AEGIS → SAINT");
-  console.log(" PORT:", PORT);
-  console.log("==================================");
+
+
+
+
+
+
+// ======================================
+// START
+// ======================================
+
+
+const PORT =
+process.env.PORT || 3000;
+
+
+
+server.listen(
+PORT,
+()=>{
+
+
+console.log(`
+=================================
+ VEYRONIX INTELLIGENCE ENGINE
+ OMNIVEX OS PRIME CORE ONLINE
+ RUNTIME HEARTBEAT ACTIVE
+ API PORT: ${PORT}
+=================================
+`);
+
+
+
+runtime.start();
+
+
+
 });
+

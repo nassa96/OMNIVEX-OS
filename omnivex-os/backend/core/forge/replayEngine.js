@@ -1,32 +1,72 @@
-import { getLedger } from "../chronicle/chronicle.js";
-
 /**
  * OMNIVEX FORGE — REPLAY ENGINE
- * Converts CHRONICLE history into learning dataset
+ * CHRONICLE CONNECTED
+ * CommonJS Runtime Compatible
  */
 
-export function loadReplay(filter = {}) {
-  const data = getLedger();
 
-  if (!filter.type) return data;
+const chronicle =
+require("../../kernel/memory/chronicleStore");
 
-  return data.filter(e => e.type === filter.type);
+
+
+function loadReplay(){
+
+    const events =
+    chronicle.all();
+
+
+
+    if(!Array.isArray(events)){
+
+        return [];
+
+    }
+
+
+
+    return events.filter(
+
+        event =>
+        event.type === "strategy.replay"
+
+    );
+
+
 }
 
-/**
- * Build structured training dataset from execution history
- */
-export function buildDataset() {
-  const data = getLedger();
 
-  return data
-    .filter(e => e.type.includes("POSITION") || e.type.includes("EXECUTION"))
-    .map(e => ({
-      symbol: e.symbol,
-      action: e.action,
-      confidence: e.confidence,
-      pnl: e.metadata?.pnl || 0,
-      risk: e.metadata?.riskFlags || [],
-      ts: e.ts
-    }));
+
+function recordReplay(event = {}){
+
+
+    return chronicle.record({
+
+        type:"strategy.replay",
+
+        ...event
+
+    });
+
+
 }
+
+
+
+function clearReplay(){
+
+    return;
+
+}
+
+
+
+module.exports = {
+
+    loadReplay,
+
+    recordReplay,
+
+    clearReplay
+
+};

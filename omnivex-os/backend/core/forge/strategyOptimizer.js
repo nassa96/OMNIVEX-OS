@@ -1,151 +1,132 @@
 /**
- * FORGE STRATEGY MUTATION + OPTIMIZER v1
- * --------------------------------------
- * PURPOSE:
- * - Evolve trading strategy parameters
- * - Select high-performing configurations
- * - Mutate weak strategies
- * - Reinforce profitable behaviors
+ * OMNIVEX FORGE — STRATEGY OPTIMIZER
+ * CommonJS runtime compatible
+ *
+ * Evolution scoring and strategy performance memory
  */
 
-/* =========================
-   STRATEGY POOL
-========================= */
 
-const strategies = {
-  default: {
-    entryThreshold: 0.6,
-    exitThreshold: 0.3,
-    riskMultiplier: 1.0,
-    confidenceBias: 1.0,
-    fitness: 1.0,
-    trades: 0,
-    pnl: 0
-  }
+const performanceLedger = [];
+
+
+
+function reportPerformance(strategyId, metrics = {}) {
+
+    const report = {
+
+        strategyId,
+
+        metrics,
+
+        timestamp: Date.now()
+
+    };
+
+
+    performanceLedger.push(
+        report
+    );
+
+
+    return report;
+
 }
 
-/* =========================
-   REGISTER PERFORMANCE
-========================= */
 
-export function reportPerformance(strategyId, metrics) {
-  if (!strategies[strategyId]) return
 
-  const s = strategies[strategyId]
+function getPerformance(strategyId) {
 
-  s.pnl += metrics.pnl || 0
-  s.trades += 1
+    return performanceLedger.filter(
+        item =>
+            item.strategyId === strategyId
+    );
 
-  const drawdownPenalty = Math.min(0.5, Math.abs(metrics.drawdown || 0))
-  const executionPenalty = 1 - (metrics.executionQuality || 0)
-
-  s.fitness =
-    (s.pnl * 0.7) -
-    (drawdownPenalty * 0.2) -
-    (executionPenalty * 0.1)
-
-  return s
 }
 
-/* =========================
-   STRATEGY MUTATION
-========================= */
 
-export function mutateStrategy(baseId, newId) {
-  const base = strategies[baseId]
-  if (!base) return null
 
-  const mutationFactor = 0.1
+function optimizeStrategy(strategy = {}) {
 
-  const mutated = {
-    entryThreshold: clamp(base.entryThreshold + rand(mutationFactor)),
-    exitThreshold: clamp(base.exitThreshold + rand(mutationFactor)),
-    riskMultiplier: clamp(base.riskMultiplier + rand(mutationFactor)),
-    confidenceBias: clamp(base.confidenceBias + rand(mutationFactor)),
-    fitness: 1.0,
-    trades: 0,
-    pnl: 0
-  }
+    const history =
+        getPerformance(
+            strategy.id
+        );
 
-  strategies[newId] = mutated
 
-  return mutated
-}
+    if (history.length === 0) {
 
-/* =========================
-   SELECTION PRESSURE
-========================= */
+        return {
 
-export function selectBestStrategy() {
-  let best = null
-  let bestScore = -Infinity
+            strategy,
 
-  for (const id in strategies) {
-    const s = strategies[id]
+            score: 0,
 
-    const score =
-      s.fitness +
-      Math.log(1 + s.trades) * 0.1
+            mutation: "NEUTRAL"
 
-    if (score > bestScore) {
-      bestScore = score
-      best = id
+        };
+
     }
-  }
 
-  return best
-}
 
-/* =========================
-   EVOLUTION STEP
-========================= */
+    let score = 0;
 
-export function evolve() {
-  const best = selectBestStrategy()
 
-  if (!best) return
+    for (const item of history) {
 
-  const newId = `${best}_mut_${Date.now()}`
+        if (
+            typeof item.metrics.score === "number"
+        ) {
 
-  mutateStrategy(best, newId)
+            score += item.metrics.score;
 
-  // decay weak strategies
-  for (const id in strategies) {
-    if (strategies[id].fitness < 0) {
-      delete strategies[id]
+        }
+
     }
-  }
 
-  return {
-    best,
-    newStrategy: newId
-  }
+
+    score =
+        score / history.length;
+
+
+
+    let mutation = "HOLD";
+
+
+    if (score > 0.7) {
+
+        mutation = "PROMOTE";
+
+    }
+
+
+    if (score < 0.3) {
+
+        mutation = "MUTATE";
+
+    }
+
+
+
+    return {
+
+        strategy,
+
+        score,
+
+        mutation
+
+    };
+
 }
 
-/* =========================
-   GET STRATEGY
-========================= */
 
-export function getStrategy(id) {
-  return strategies[id]
-}
 
-/* =========================
-   UTILS
-========================= */
+module.exports = {
 
-function rand(scale) {
-  return (Math.random() - 0.5) * 2 * scale
-}
+    reportPerformance,
 
-function clamp(val) {
-  return Math.max(0.1, Math.min(1.5, val))
-}
+    getPerformance,
 
-/* =========================
-   STATE
-========================= */
+    optimizeStrategy
 
-export function getAllStrategies() {
-  return strategies
-}
+};

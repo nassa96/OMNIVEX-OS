@@ -1,123 +1,178 @@
 /**
- * OMNIVEX OS — ELOHIM v1
- * Global system governor that arbitrates between all subsystems
+ * OMNIVEX OS PRIME
+ *
+ * ELOHIM GOVERNOR
+ *
+ * Deterministic orchestration authority
+ *
+ * Runtime:
+ * CommonJS
  */
 
-export function createElohimOrchestrator({
+
+function createElohimOrchestrator({
+
   bus,
   chronicle,
-  state,
   ledger
-} = {}) {
-  if (!bus) throw new Error("Bus required for Elohim orchestrator");
 
-  /**
-   * =========================
-   * SYSTEM WEIGHTS
-   * =========================
-   */
+} = {}){
 
-  const weights = {
-    SOPHIA: 0.25,
-    OVERLORD: 0.25,
-    CAPITAL: 0.2,
-    SAINT: 0.2,
-    LEDGER: 0.1
-  };
-
-  /**
-   * =========================
-   * DECISION BUFFER
-   * =========================
-   */
 
   let lastDecision = null;
 
-  /**
-   * =========================
-   * SCORING FUNCTION
-   * =========================
-   */
 
-  function score(signal) {
-    let s = 0;
 
-    if (!signal) return 0;
+  const state = {
 
-    s += (signal.sophiaStrength || 0) * weights.SOPHIA;
-    s += (signal.memeScore || 0) * 0.1;
-    s += (signal.arbitrageScore || 0) * 0.15;
-    s += (signal.capitalConfidence || 0) * weights.CAPITAL;
-    s += (signal.executionConfidence || 0) * weights.SAINT;
+    mode:"LIVE",
 
-    const pnl = ledger?.getSummary?.().pnl || 0;
+    decisions:0,
 
-    if (pnl < 0) s -= 0.1;
-    if (pnl > 0) s += 0.1;
+    timestamp:null
 
-    return s;
-  }
+  };
 
-  /**
-   * =========================
-   * FINAL RESOLUTION
-   * =========================
-   */
 
-  function resolve(event) {
-    const decisionScore = score(event);
 
-    const decision = {
-      type: "system.decision",
 
-      ts: Date.now(),
+  function evaluate(input){
 
-      score: decisionScore,
 
-      action:
-        decisionScore > 0.6
-          ? "EXECUTE"
-          : decisionScore > 0.3
-          ? "WAIT"
-          : "HOLD",
+    if(!input){
 
-      source: {
-        sophia: event?.regime || "UNKNOWN",
-        overlord: event?.venue || "coinbase",
-        capital: event?.portfolio || null
-      }
+      return {
+
+        action:"HOLD",
+
+        confidence:0
+
+      };
+
+    }
+
+
+
+    const confidence =
+      input.confidence ||
+      input.score ||
+      0;
+
+
+
+    let action="HOLD";
+
+
+
+    if(confidence >= 0.65){
+
+      action="EXECUTE";
+
+    }
+
+    else if(confidence >=0.35){
+
+      action="WAIT";
+
+    }
+
+
+
+    const decision={
+
+
+      type:
+      "elohim.decision",
+
+
+      action,
+
+
+      confidence,
+
+
+      source:
+      "ELOHIM_RUNTIME",
+
+
+      timestamp:
+      Date.now()
+
     };
 
-    lastDecision = decision;
 
-    bus.emit(decision.type, decision);
-    chronicle?.append?.(decision);
+
+    lastDecision=decision;
+
+
+
+    state.decisions++;
+
+    state.timestamp =
+    Date.now();
+
+
+
+    if(bus){
+
+      bus.emit(
+        "elohim.decision",
+        decision
+      );
+
+    }
+
+
+
+    if(chronicle?.record){
+
+      chronicle.record(
+        decision
+      );
+
+    }
+
+
 
     return decision;
+
+
   }
 
-  /**
-   * =========================
-   * EVENT LISTENER
-   * =========================
-   */
 
-  bus.onAny((event) => {
-    if (!event) return;
 
-    /**
-     * MAIN DECISION INPUTS
-     */
-    if (
-      event.type === "signal.sophia" ||
-      event.type === "market.overlord.route" ||
-      event.type === "capital.rotation"
-    ) {
-      resolve(event);
-    }
-  });
+
 
   return {
-    getDecision: () => lastDecision
+
+
+    evaluate,
+
+
+    decide:evaluate,
+
+
+    getDecision(){
+
+      return lastDecision;
+
+    },
+
+
+    status(){
+
+      return state;
+
+    }
+
+
   };
+
+
 }
+
+
+
+
+module.exports =
+createElohimOrchestrator;
