@@ -3,175 +3,107 @@
  *
  * KERNEL SUPERVISOR
  *
- * Master lifecycle controller
+ * Lifecycle observer only.
  *
- * Responsibilities:
- * - boot kernel services
- * - start runtime heartbeat
- * - connect runtime bridge
- * - monitor system health
- * - expose deterministic state
- *
+ * Runtime ownership:
+ * server.js
  */
 
-
-const registry =
-require("../registry");
-
-
-const runtime =
-require("../runtime/omnivexRuntime");
-
-
-const RuntimeBridge =
-require("../runtime/runtimeBridge");
-
+const registry = require("../registry");
+const runtime = require("../runtime/omnivexRuntime");
+const RuntimeBridge = require("../runtime/runtimeBridge");
 
 
 class KernelSupervisor {
 
 
-  constructor(){
+    constructor(){
 
-    this.state={
+        this.state = {
 
-      system:
-      "OMNIVEX_OS_PRIME",
+            system:
+            "OMNIVEX_OS_PRIME",
 
-      status:
-      "INITIALIZING",
+            status:
+            "INITIALIZING",
 
-      bootTime:
-      null,
+            bootTime:
+            null,
 
-      heartbeat:
-      0,
+            heartbeat:
+            0,
 
-      services:
-      {}
+            services:{}
 
-    };
+        };
 
 
-    this.bridge =
-    null;
+        this.bridge = null;
 
+    }
 
-  }
 
 
+    boot(){
 
-  boot(){
+        console.log(
+            "[KERNEL SUPERVISOR] BOOT"
+        );
 
-    console.log(
-      "[KERNEL SUPERVISOR] BOOT"
-    );
 
+        this.state.bootTime =
+        Date.now();
 
-    this.state.bootTime =
-    Date.now();
 
+        /*
+          Runtime is NOT started here.
+          server.js owns runtime lifecycle.
+        */
 
 
-    this.startRuntime();
+        this.attachBridge();
 
 
-    this.startBridge();
+        this.state.status =
+        "ONLINE";
 
 
-    this.state.status =
-    "ONLINE";
+        console.log(
+            "[KERNEL SUPERVISOR ONLINE]"
+        );
 
+    }
 
-    console.log(
-      "[KERNEL SUPERVISOR ONLINE]"
-    );
 
 
-  }
+    attachBridge(){
 
+        this.bridge =
+        new RuntimeBridge(runtime);
 
 
-  startRuntime(){
+        this.bridge.start();
 
 
-    if(!runtime)
-      throw new Error(
-        "Runtime unavailable"
-      );
+        this.state.services.bridge =
+        "ONLINE";
 
+    }
 
-    runtime.start(
-      3000
-    );
 
 
-    this.state.services.runtime =
-    "ONLINE";
+    health(){
 
+        return {
 
-  }
+            ...this.state,
 
+            runtime:
+            runtime.status()
 
+        };
 
-  startBridge(){
-
-
-    this.bridge =
-    new RuntimeBridge(
-      runtime
-    );
-
-
-    this.bridge.start();
-
-
-    this.state.services.bridge =
-    "ONLINE";
-
-
-  }
-
-
-
-  health(){
-
-
-    return {
-
-      ...this.state,
-
-
-      runtime:
-      runtime.status(),
-
-      registry:
-      registry
-
-    };
-
-
-  }
-
-
-
-  shutdown(){
-
-
-    console.log(
-      "[KERNEL SUPERVISOR STOPPING]"
-    );
-
-
-    runtime.stop();
-
-
-    this.state.status =
-    "OFFLINE";
-
-
-  }
-
+    }
 
 }
 

@@ -1,165 +1,379 @@
 /**
  * OMNIVEX OS — MERCURY v2 STREAMCORE
- * Multi-exchange ingestion + normalization + anomaly + memecoin burst detection
+ * Live market ingestion
+ * Normalization
+ * Anomaly detection
+ * Meme burst detection
+ * Deterministic market state
  */
 
-export function createMercuryStreamCore({ bus, chronicle } = {}) {
-  if (!bus) throw new Error("Bus required for Mercury StreamCore");
+function createMercuryStreamCore({ bus, chronicle } = {}) {
 
-  /**
-   * =========================
-   * NORMALIZED MARKET STATE
-   * =========================
-   */
+    if (!bus)
+        throw new Error(
+            "Mercury StreamCore requires event bus"
+        );
 
-  const marketState = {
-    BTC: { price: 0, volume: 0 },
-    ETH: { price: 0, volume: 0 },
-    ALT: { price: 0, volume: 0 }
-  };
 
-  /**
-   * =========================
-   * ANOMALY DETECTION
-   * =========================
-   */
+    const marketState = {
 
-  function detectSpike(symbol, price) {
-    const prev = marketState[symbol]?.price || 0;
+        BTC:{
+            price:0,
+            volume:0
+        },
 
-    if (prev === 0) return false;
+        ETH:{
+            price:0,
+            volume:0
+        },
 
-    const change = Math.abs(price - prev) / prev;
+        SOL:{
+            price:0,
+            volume:0
+        },
 
-    return change > 0.05; // 5% micro spike threshold
-  }
+        ALT:{
+            price:0,
+            volume:0
+        }
 
-  /**
-   * =========================
-   * MEME BURST DETECTOR (LOW LEVEL SIGNAL)
-   * =========================
-   */
+    };
 
-  function detectMemeBurst(event) {
-    const raw = JSON.stringify(event).toLowerCase();
 
-    const triggers = ["pepe", "doge", "shib", "elon", "moon", "pump", "100x"];
 
-    let score = 0;
+    function normalize(event){
 
-    for (const t of triggers) {
-      if (raw.includes(t)) score++;
+        const data =
+        event?.data || {};
+
+
+        return {
+
+            venue:
+            data.venue || "unknown",
+
+
+            asset:
+            data.asset || "BTC",
+
+
+            price:
+            Number(
+                data.price || 0
+            ),
+
+
+            volume:
+            Number(
+                data.volume || 0
+            ),
+
+
+            timestamp:
+            Date.now(),
+
+
+            raw:event
+
+        };
+
     }
 
-    return score >= 2;
-  }
 
-  /**
-   * =========================
-   * NORMALIZER
-   * =========================
-   */
 
-  function normalize(event) {
-    const data = event?.data || {};
+    function detectSpike(asset, price){
+
+        const previous =
+        marketState[asset]?.price || 0;
+
+
+        if(previous === 0)
+            return false;
+
+
+        const change =
+        Math.abs(
+            price - previous
+        ) / previous;
+
+
+        return change >= 0.05;
+
+    }
+
+
+
+    function detectMemeBurst(event){
+
+        const text =
+        JSON.stringify(event)
+        .toLowerCase();
+
+
+        const triggers = [
+
+            "pepe",
+            "doge",
+            "shib",
+            "elon",
+            "moon",
+            "pump",
+            "100x"
+
+        ];
+
+
+        let score = 0;
+
+
+        for(
+            const trigger of triggers
+        ){
+
+            if(
+                text.includes(trigger)
+            )
+                score++;
+
+        }
+
+
+        return score >= 2;
+
+    }
+
+
+
+    function process(event){
+
+        const tick =
+        normalize(event);
+
+
+        if(
+            !marketState[tick.asset]
+        ){
+
+            marketState[tick.asset] = {
+
+                price:0,
+
+                volume:0
+
+            };
+
+        }
+
+
+
+        const spike =
+        detectSpike(
+            tick.asset,
+            tick.price
+        );
+
+
+
+        marketState[tick.asset] = {
+
+            price:
+            tick.price,
+
+            volume:
+            tick.volume
+
+        };
+
+
+
+        const marketEvent = {
+
+            type:
+            "market.tick",
+
+
+            ts:
+            Date.now(),
+
+
+            data:
+            tick
+
+        };
+
+
+
+        console.log(
+            "[MERCURY TICK]",
+            tick.asset,
+            tick.price
+        );
+
+
+
+        bus.emit(
+            "market.tick",
+            marketEvent
+        );
+
+
+
+        if(
+            chronicle &&
+            typeof chronicle.append === "function"
+        ){
+
+            chronicle.append(
+                marketEvent
+            );
+
+        }
+
+
+
+        if(spike){
+
+            const anomaly = {
+
+                type:
+                "market.anomaly.spike",
+
+
+                ts:
+                Date.now(),
+
+
+                asset:
+                tick.asset,
+
+
+                price:
+                tick.price
+
+            };
+
+
+            bus.emit(
+                anomaly.type,
+                anomaly
+            );
+
+
+            if(
+                chronicle &&
+                typeof chronicle.append === "function"
+            ){
+
+                chronicle.append(
+                    anomaly
+                );
+
+            }
+
+        }
+
+
+
+        if(
+            detectMemeBurst(event)
+        ){
+
+            const meme = {
+
+                type:
+                "market.meme.burst",
+
+
+                ts:
+                Date.now(),
+
+
+                asset:
+                tick.asset,
+
+
+                price:
+                tick.price
+
+            };
+
+
+            bus.emit(
+                meme.type,
+                meme
+            );
+
+
+            if(
+                chronicle &&
+                typeof chronicle.append === "function"
+            ){
+
+                chronicle.append(
+                    meme
+                );
+
+            }
+
+        }
+
+
+        return marketEvent;
+
+    }
+
+
+
+    function getState(){
+
+        return {
+
+            BTC:{
+                ...marketState.BTC
+            },
+
+            ETH:{
+                ...marketState.ETH
+            },
+
+            SOL:{
+                ...marketState.SOL
+            },
+
+            ALT:{
+                ...marketState.ALT
+            }
+
+        };
+
+    }
+
+
+
+    bus.on(
+        "raw.feed",
+        process
+    );
+
+
+
+    console.log(
+        "[MERCURY STREAMCORE ONLINE]"
+    );
+
+
 
     return {
-      venue: data.venue || "unknown",
-      asset: data.asset || "BTC",
-      price: Number(data.price || 0),
-      volume: Number(data.volume || 0),
-      raw: event
-    };
-  }
 
-  /**
-   * =========================
-   * STREAM PROCESSOR
-   * =========================
-   */
+        process,
 
-  function process(event) {
-    const n = normalize(event);
+        getState
 
-    const spike = detectSpike(n.asset, n.price);
-    const memeBurst = detectMemeBurst(event);
-
-    marketState[n.asset] = {
-      price: n.price,
-      volume: n.volume
     };
 
-    /**
-     * CORE MARKET TICK
-     */
-    const tick = {
-      type: "market.tick",
-
-      ts: Date.now(),
-
-      data: n
-    };
-
-    bus.emit(tick.type, tick);
-    chronicle?.append?.(tick);
-
-    /**
-     * ANOMALY EVENT
-     */
-    if (spike) {
-      const anomaly = {
-        type: "market.anomaly.spike",
-
-        ts: Date.now(),
-
-        asset: n.asset,
-
-        price: n.price
-      };
-
-      bus.emit(anomaly.type, anomaly);
-      chronicle?.append?.(anomaly);
-    }
-
-    /**
-     * MEME BURST EVENT
-     */
-    if (memeBurst) {
-      const meme = {
-        type: "market.meme.burst",
-
-        ts: Date.now(),
-
-        asset: n.asset,
-
-        intensity: 1
-      };
-
-      bus.emit(meme.type, meme);
-      chronicle?.append?.(meme);
-    }
-
-    return tick;
-  }
-
-  /**
-   * =========================
-   * EVENT LISTENER (RAW FEEDS)
-   * =========================
-   */
-
-  bus.onAny((event) => {
-    if (!event) return;
-
-    /**
-     * Accept raw multi-venue feeds
-     */
-    if (event.type === "raw.feed" || event.type === "exchange.tick") {
-      process(event);
-    }
-  });
-
-  return {
-    getState: () => marketState
-  };
 }
+
+
+
+module.exports =
+createMercuryStreamCore;

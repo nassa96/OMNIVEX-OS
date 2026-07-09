@@ -3,247 +3,321 @@
  *
  * AGENT REGISTRY BOOTSTRAP
  *
- * Single source of truth for active system modules
+ * Deterministic module registry
+ *
+ * Responsibilities:
+ * - register all active agents
+ * - expose health state
+ * - prevent duplicate loading
+ * - provide runtime lookup
  */
 
 
-const registry = [];
+const registry = new Map();
+
 
 
 function register(name, module){
 
-  const agent = {
-
-    name,
-
-    status:
-    "ONLINE",
-
-    registered:
-    Date.now(),
-
-    module:
-    module || null
-
-  };
+    if(registry.has(name)){
+        return registry.get(name);
+    }
 
 
-  registry.push(agent);
+    const agent = {
+
+        name,
+
+        status:
+        module ? "ONLINE" : "OFFLINE",
+
+        registered:
+        Date.now(),
+
+        module:
+        module || null
+
+    };
 
 
-  console.log(
-    "[REGISTRY] REGISTERED:",
-    name
-  );
+    registry.set(
+        name,
+        agent
+    );
 
 
-  return agent;
+    console.log(
+        "[REGISTRY] REGISTERED:",
+        name
+    );
+
+
+    return agent;
 
 }
+
+
+
+
+
+function safeRequire(path){
+
+    try{
+
+        return require(path);
+
+    }
+
+    catch(err){
+
+        console.log(
+            "[REGISTRY OPTIONAL OFFLINE]",
+            path
+        );
+
+        return null;
+
+    }
+
+}
+
 
 
 
 
 function boot(){
 
-  if(registry.length)
+
+    if(registry.size){
+        return registry;
+    }
+
+
+
+
+    /*
+    ============================
+    INTELLIGENCE
+    ============================
+    */
+
+
+    register(
+        "SOPHIA",
+        safeRequire(
+            "../../agents/sophia/sophiaEngine"
+        )
+        ||
+        safeRequire(
+            "../sophia/sophiaEvolutionEngine"
+        )
+    );
+
+
+
+
+
+    /*
+    ============================
+    MARKET DATA
+    ============================
+    */
+
+
+    let mercury = null;
+
+
+    try{
+
+        const Mercury =
+        require("../../core/mercury");
+
+
+        mercury =
+        new Mercury();
+
+
+    }
+
+    catch(err){}
+
+
+
+    register(
+        "MERCURY",
+        mercury
+    );
+
+
+
+
+
+    /*
+    ============================
+    RISK GOVERNOR
+    ============================
+    */
+
+
+    register(
+        "AEGIS",
+        safeRequire(
+            "../aegis/aegisCore"
+        )
+    );
+
+
+
+
+
+    /*
+    ============================
+    ORCHESTRATION
+    ============================
+    */
+
+
+    register(
+        "ELOHIM",
+        safeRequire(
+            "../elohimOrchestrator"
+        )
+    );
+
+
+
+
+
+    /*
+    ============================
+    EXECUTION
+    ============================
+    */
+
+
+    register(
+        "SAINT",
+        safeRequire(
+            "../../agents/saint/saintEngine"
+        )
+    );
+
+
+
+
+
+    /*
+    ============================
+    MEMORY
+    ============================
+    */
+
+
+    register(
+        "CHRONICLE",
+        safeRequire(
+            "../../chronicle/core/chronicleEngine"
+        )
+        ||
+        safeRequire(
+            "../memory/chronicleStore"
+        )
+    );
+
+
+
+
+
     return registry;
 
+}
 
 
-  // ============================
-  // INTELLIGENCE LAYER
-  // ============================
 
 
-  let sophia = null;
 
-  try{
+function get(name){
 
-    sophia =
-    require("../../agents/sophia/sophiaEngine");
+    boot();
 
-  }catch(e){}
 
-
-
-  register(
-    "SOPHIA",
-    sophia
-  );
-
-
-
-  // ============================
-  // MARKET DATA LAYER
-  // ============================
-
-
-  let mercury = null;
-
-  try{
-
-    const Mercury =
-    require("../../core/mercury");
-
-    mercury =
-    new Mercury();
-
-  }catch(e){}
-
-
-
-  register(
-    "MERCURY",
-    mercury
-  );
-
-
-
-  // ============================
-  // RISK GOVERNOR
-  // ============================
-
-
-  let aegis = null;
-
-  try{
-
-    aegis =
-    require("../aegis/aegisCore");
-
-  }catch(e){}
-
-
-
-  register(
-    "AEGIS",
-    aegis
-  );
-
-
-
-  // ============================
-  // ORCHESTRATOR
-  // ============================
-
-
-  let elohim = null;
-
-  try{
-
-    elohim =
-    require("../elohimOrchestrator");
-
-  }catch(e){}
-
-
-
-  register(
-    "ELOHIM",
-    elohim
-  );
-
-
-
-  // ============================
-  // EXECUTION ENGINE
-  // ============================
-
-
-  let saint = null;
-
-  try{
-
-    saint =
-    require("../../agents/saint/saintEngine");
-
-  }catch(e){}
-
-
-
-  register(
-    "SAINT",
-    saint
-  );
-
-
-
-  // ============================
-  // MEMORY SYSTEM
-  // ============================
-
-
-  let chronicle = null;
-
-  try{
-
-    chronicle =
-    require("../../chronicle/core/chronicleEngine");
-
-  }catch(e){}
-
-
-
-  register(
-    "CHRONICLE",
-    chronicle
-  );
-
-
-
-  return registry;
+    return registry.get(name)
+    ||
+    null;
 
 }
+
+
+
+
+
+function all(){
+
+    boot();
+
+
+    return Array.from(
+        registry.values()
+    );
+
+}
+
 
 
 
 
 function health(){
 
-  return {
-
-    total:
-    registry.length,
+    boot();
 
 
-    agents:
-    registry.map(agent=>({
+    return {
 
-      name:
-      agent.name,
-
-      status:
-      agent.status,
-
-      registered:
-      agent.registered
-
-    })),
+        total:
+        registry.size,
 
 
-    timestamp:
-    Date.now()
+        agents:
+        all().map(agent=>({
 
-  };
+            name:
+            agent.name,
+
+
+            status:
+            agent.status,
+
+
+            registered:
+            agent.registered
+
+        })),
+
+
+        timestamp:
+        Date.now()
+
+    };
 
 }
 
 
 
 
-module.exports =
-function registerAgents(){
 
-  boot();
+module.exports = function registerAgents(){
+
+    boot();
 
 
-  return {
+    return {
 
-    health,
+        health,
 
-    all:()=>registry
+        all,
 
-  };
+        get
+
+    };
 
 };

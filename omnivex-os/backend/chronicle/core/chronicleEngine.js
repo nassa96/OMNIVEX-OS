@@ -1,17 +1,33 @@
-const memory = [];
+/**
+ * OMNIVEX OS
+ * CHRONICLE MEMORY BRIDGE
+ *
+ * Temporary compatibility layer.
+ * All persistent memory flows through kernel/memory/chronicleStore.
+ */
 
-function record(event) {
-  memory.push(event);
+const chronicleStore = require("../../kernel/memory/chronicleStore");
 
-  // cap memory size (prevent Termux overload)
-  if (memory.length > 500) memory.shift();
+function record(event){
+
+    return chronicleStore.record({
+        type:"chronicle.event",
+        ...event
+    });
+
 }
 
-function getHistory() {
-  return memory.slice().reverse();
+
+function getHistory(){
+
+    return chronicleStore.replay();
+
 }
+
 
 module.exports = {
-  record,
-  getHistory
+
+    record,
+    getHistory
+
 };

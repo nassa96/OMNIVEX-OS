@@ -3,133 +3,246 @@
  *
  * ELOHIM RUNTIME BRIDGE
  *
- * CommonJS adapter for the runtime layer.
+ * Connects:
  *
- * Runtime
- *    |
- *    v
- * ELOHIM BRIDGE
- *    |
- *    v
- * Decision
+ * SOPHIA SIGNAL
+ *        |
+ *        v
+ * ELOHIM DECISION
  *
  */
+
+const eventBus =
+require("../eventBus");
+
 
 
 class ElohimRuntimeBridge {
 
 
-  constructor(){
-
-    this.state = {
-
-      decisions:0,
-
-      lastDecision:null,
-
-      mode:"GOVERNANCE"
-
-    };
-
-  }
+    constructor(){
 
 
+        this.state = {
 
-  resolve(context){
+            decisions:0,
 
-    if(!context){
+            lastDecision:null,
 
-      return {
+            mode:"GOVERNANCE"
 
-        action:"HOLD",
+        };
 
-        reason:"NO_CONTEXT"
 
-      };
+        this.init();
+
 
     }
 
 
 
-    const signal =
-      context.signal || {};
+
+
+    init(){
+
+
+        if(
+            eventBus &&
+            typeof eventBus.subscribe === "function"
+        ){
+
+
+            eventBus.subscribe(
+
+                "sophia.signal",
+
+                (signal)=>{
+
+
+                    const decision =
+                    this.resolve({
+
+                        signal
+
+                    });
 
 
 
-    const confidence =
-      signal.confidence || 0;
+                    eventBus.publish(
+
+                        "elohim.decision",
+
+                        decision
+
+                    );
 
 
+                }
 
-    let action = "HOLD";
+            );
 
 
+            console.log(
+                "[ELOHIM BRIDGE ONLINE]"
+            );
 
-    if(confidence >= 0.70){
 
-      action = "EXECUTE";
+        }
+
 
     }
 
-    else if(confidence >= 0.40){
 
-      action = "WAIT";
+
+
+
+
+
+    resolve(context){
+
+
+        if(!context){
+
+
+            return {
+
+                type:
+                "elohim.decision",
+
+                action:
+                "HOLD",
+
+                confidence:
+                0,
+
+                reason:
+                "NO_CONTEXT"
+
+            };
+
+
+        }
+
+
+
+
+        const signal =
+        context.signal || {};
+
+
+
+        const confidence =
+        Number(
+            signal.confidence || 0
+        );
+
+
+
+        let action =
+        "HOLD";
+
+
+
+        if(
+            signal.action === "BUY" &&
+            confidence >= 0.65
+        ){
+
+            action =
+            "BUY";
+
+        }
+
+
+
+        else if(
+            signal.action === "SELL" &&
+            confidence >= 0.65
+        ){
+
+            action =
+            "SELL";
+
+        }
+
+
+
+
+
+        const decision = {
+
+
+            type:
+            "elohim.decision",
+
+
+            action,
+
+
+            confidence,
+
+
+            symbol:
+            signal.symbol || "BTC",
+
+
+            source:
+            "ELOHIM_RUNTIME_BRIDGE",
+
+
+            timestamp:
+            Date.now()
+
+
+        };
+
+
+
+        this.state.decisions++;
+
+
+        this.state.lastDecision =
+        decision;
+
+
+
+        console.log(
+
+            "[ELOHIM DECISION]",
+
+            action,
+
+            confidence
+
+        );
+
+
+
+        return decision;
+
 
     }
 
 
 
-    const decision = {
-
-
-      type:
-        "elohim.decision",
-
-
-      action,
-
-
-      confidence,
-
-
-      source:
-        "ELOHIM_RUNTIME_BRIDGE",
-
-
-      heartbeat:
-        context.heartbeat || 0,
-
-
-      timestamp:
-        Date.now()
-
-    };
 
 
 
-    this.state.decisions++;
 
-    this.state.lastDecision =
-      decision;
+    status(){
 
 
-
-    return decision;
-
-  }
+        return this.state;
 
 
-
-  status(){
-
-    return this.state;
-
-  }
+    }
 
 
 }
 
 
+
+
+
 module.exports =
 new ElohimRuntimeBridge();
-

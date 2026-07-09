@@ -2,137 +2,463 @@ const eventBus = require("../eventBus");
 const Tartarus = require("../tartarus/tartarusEngine");
 
 /**
- * SOPHIA EVOLUTION CORE
- * Generates + mutates trading logic (not just signals)
+ * OMNIVEX OS — SOPHIA INTELLIGENCE ENGINE
  *
- * ROLE:
- * - interpret market state
- * - generate strategies dynamically
- * - inject adaptive logic into SAINT
- * - evolve decision-making rules
+ * Responsibilities:
+ * - consume MERCURY market.tick events
+ * - analyze momentum/trend
+ * - generate adaptive strategies
+ * - emit sophia.signal
+ * - evolve strategy pool
  */
 
+
 class SophiaEvolutionEngine {
-  constructor() {
-    this.strategyPool = [];
-    this.activeStrategy = null;
-    this.marketState = null;
-  }
 
-  init() {
-    eventBus.subscribe("market.tick", (tick) => {
-      this.marketState = tick;
-      this.evolve();
-    });
 
-    eventBus.subscribe("tartarus.update", (update) => {
-      this.applyLearning(update);
-    });
-  }
+    constructor(){
 
-  /**
-   * STEP 1: CORE EVOLUTION LOOP
-   */
-  evolve() {
-    if (!this.marketState) return;
+        this.strategyPool = [];
 
-    const strategy = this.generateStrategy(this.marketState);
+        this.activeStrategy = null;
 
-    this.strategyPool.push(strategy);
+        this.marketState = {};
 
-    // keep only best 20 candidates
-    if (this.strategyPool.length > 20) {
-      this.strategyPool.shift();
+        this.history = [];
+
     }
 
-    this.activeStrategy = this.selectBestStrategy();
 
-    eventBus.publish("sophia.strategy", this.activeStrategy);
-  }
 
-  /**
-   * STEP 2: STRATEGY GENERATION (KEY INNOVATION POINT)
-   */
-  generateStrategy(market) {
-    const volatility = market.volatility || Math.random();
-    const trend = market.trend || "NEUTRAL";
 
-    let strategy = {
-      type: "adaptive",
-      bias: 0,
-      risk: 1,
-      threshold: 0.5
-    };
+    init(){
 
-    // dynamic strategy morphing
-    if (trend === "BULLISH" && volatility > 0.6) {
-      strategy.bias = 1.2;
-      strategy.threshold = 0.55;
+        eventBus.subscribe(
+            "market.tick",
+            (tick)=>{
+
+                this.marketState =
+                tick.data || tick;
+
+                this.history.push(
+                    this.marketState
+                );
+
+
+                if(this.history.length > 50){
+                    this.history.shift();
+                }
+
+
+                this.analyze();
+
+                this.evolve();
+
+            }
+        );
+
+
+
+        eventBus.subscribe(
+            "tartarus.update",
+            (update)=>{
+
+                this.applyLearning(update);
+
+            }
+        );
+
+
+        console.log(
+            "[SOPHIA ONLINE]"
+        );
+
     }
 
-    if (trend === "BEARISH" && volatility > 0.6) {
-      strategy.bias = -1.2;
-      strategy.threshold = 0.6;
+
+
+
+
+
+
+    analyze(){
+
+        const market =
+        this.marketState;
+
+
+        const price =
+        Number(
+            market.price || 0
+        );
+
+
+        const previous =
+        this.history.length > 1
+        ?
+        Number(
+            this.history[
+                this.history.length - 2
+            ].price || price
+        )
+        :
+        price;
+
+
+
+        let change = 0;
+
+
+        if(previous > 0){
+
+            change =
+            (price - previous)
+            /
+            previous;
+
+        }
+
+
+
+        let action="HOLD";
+
+
+        let confidence=0.5;
+
+
+
+        if(change > 0.001){
+
+            action="BUY";
+
+            confidence =
+            Math.min(
+                0.95,
+                0.5 + Math.abs(change)*100
+            );
+
+        }
+
+
+
+        if(change < -0.001){
+
+            action="SELL";
+
+            confidence =
+            Math.min(
+                0.95,
+                0.5 + Math.abs(change)*100
+            );
+
+        }
+
+
+
+
+        const signal={
+
+            type:
+            "sophia.signal",
+
+
+            action,
+
+
+            confidence:
+            Number(
+                confidence.toFixed(3)
+            ),
+
+
+            symbol:
+            market.asset ||
+            "BTC",
+
+
+            price,
+
+
+            change,
+
+
+            timestamp:
+            Date.now()
+
+        };
+
+
+
+        eventBus.publish(
+            "sophia.signal",
+            signal
+        );
+
+
+
+        return signal;
+
     }
 
-    if (volatility < 0.3) {
-      strategy.bias = 0.3;
-      strategy.threshold = 0.4;
+
+
+
+
+
+
+    evolve(){
+
+
+        if(!this.marketState)
+            return;
+
+
+
+        const strategy =
+        this.generateStrategy(
+            this.marketState
+        );
+
+
+
+        this.strategyPool.push(
+            strategy
+        );
+
+
+
+        if(this.strategyPool.length > 20){
+
+            this.strategyPool.shift();
+
+        }
+
+
+
+        this.activeStrategy =
+        this.selectBestStrategy();
+
+
+
+        eventBus.publish(
+            "sophia.strategy",
+            this.activeStrategy
+        );
+
+
     }
 
-    return strategy;
-  }
 
-  /**
-   * STEP 3: APPLY LEARNING FROM TARTARUS
-   */
-  applyLearning(update) {
-    const { strategyState } = update;
 
-    // adjust generation parameters
-    if (strategyState.bias < 0.8) {
-      this.increaseConservatism();
+
+
+
+
+    generateStrategy(market){
+
+
+        const volatility =
+        Math.random();
+
+
+
+        let bias=0;
+
+
+        let threshold=0.5;
+
+
+
+        if(volatility > .6){
+
+            bias=1;
+
+            threshold=.6;
+
+        }
+
+
+        if(volatility < .3){
+
+            bias=.3;
+
+            threshold=.4;
+
+        }
+
+
+
+        return {
+
+            type:
+            "adaptive",
+
+
+            bias,
+
+
+            risk:
+            volatility,
+
+
+            threshold,
+
+
+            symbol:
+            market.asset || "BTC"
+
+        };
+
+
     }
 
-    if (strategyState.bias > 1.5) {
-      this.increaseAggression();
+
+
+
+
+
+
+    applyLearning(update){
+
+
+        if(!update)
+            return;
+
+
+
+        const state =
+        update.strategyState;
+
+
+
+        if(!state)
+            return;
+
+
+
+        if(state.bias < .8){
+
+            this.increaseConservatism();
+
+        }
+
+
+        if(state.bias > 1.5){
+
+            this.increaseAggression();
+
+        }
+
+
     }
-  }
 
-  increaseConservatism() {
-    this.strategyPool.forEach(s => {
-      s.threshold += 0.02;
-      s.bias *= 0.95;
-    });
-  }
 
-  increaseAggression() {
-    this.strategyPool.forEach(s => {
-      s.threshold -= 0.02;
-      s.bias *= 1.05;
-    });
-  }
 
-  /**
-   * STEP 4: STRATEGY SELECTION
-   */
-  selectBestStrategy() {
-    if (this.strategyPool.length === 0) return null;
 
-    // lightweight scoring model
-    return this.strategyPool.reduce((best, current) => {
-      const scoreA = Math.abs(best.bias) / (best.threshold + 0.01);
-      const scoreB = Math.abs(current.bias) / (current.threshold + 0.01);
-      return scoreB > scoreA ? current : best;
-    });
-  }
 
-  /**
-   * STEP 5: OUTPUT TO EXECUTION ENGINE
-   */
-  getActiveStrategy() {
-    return this.activeStrategy;
-  }
+
+
+    increaseConservatism(){
+
+
+        this.strategyPool.forEach(
+            s=>{
+
+                s.threshold += .02;
+
+                s.bias *= .95;
+
+            }
+        );
+
+
+    }
+
+
+
+
+
+
+    increaseAggression(){
+
+
+        this.strategyPool.forEach(
+            s=>{
+
+                s.threshold -= .02;
+
+                s.bias *= 1.05;
+
+            }
+        );
+
+
+    }
+
+
+
+
+
+
+
+
+    selectBestStrategy(){
+
+
+        if(
+            this.strategyPool.length===0
+        )
+            return null;
+
+
+
+        return this.strategyPool.reduce(
+            (best,current)=>{
+
+
+                const a =
+                Math.abs(best.bias)
+                /
+                (best.threshold+.01);
+
+
+
+                const b =
+                Math.abs(current.bias)
+                /
+                (current.threshold+.01);
+
+
+
+                return b>a
+                ?
+                current
+                :
+                best;
+
+
+            }
+        );
+
+
+    }
+
+
+
+
+
+
+
+    getActiveStrategy(){
+
+        return this.activeStrategy;
+
+    }
+
+
 }
 
-module.exports = new SophiaEvolutionEngine();
+
+
+module.exports =
+new SophiaEvolutionEngine();

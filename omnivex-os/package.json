@@ -1,11 +1,11 @@
 {
   "name": "omnivex-os",
   "version": "1.0.0",
-  "main": "backend/server.cjs",
+  "main": "backend/server.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node backend/server.cjs",
-    "dev": "node backend/server.cjs"
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js"
   },
   "dependencies": {
     "cors": "^2.8.6",

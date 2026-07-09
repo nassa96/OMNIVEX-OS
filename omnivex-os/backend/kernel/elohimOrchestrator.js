@@ -1,177 +1,301 @@
 /**
  * OMNIVEX OS PRIME
  *
- * ELOHIM GOVERNOR
+ * ELOHIM ORCHESTRATOR
  *
- * Deterministic orchestration authority
+ * Decision authority layer
  *
- * Runtime:
- * CommonJS
+ * Flow:
+ *
+ * SOPHIA SIGNAL
+ *      |
+ *      v
+ * ELOHIM DECISION
+ *      |
+ *      v
+ * AEGIS / SAINT
+ *
  */
-
 
 function createElohimOrchestrator({
 
-  bus,
-  chronicle,
-  ledger
+    bus,
+    chronicle,
+    ledger
 
 } = {}){
 
 
-  let lastDecision = null;
+    let lastDecision = null;
 
 
+    const state = {
 
-  const state = {
+        mode:"LIVE",
 
-    mode:"LIVE",
+        decisions:0,
 
-    decisions:0,
-
-    timestamp:null
-
-  };
-
-
-
-
-  function evaluate(input){
-
-
-    if(!input){
-
-      return {
-
-        action:"HOLD",
-
-        confidence:0
-
-      };
-
-    }
-
-
-
-    const confidence =
-      input.confidence ||
-      input.score ||
-      0;
-
-
-
-    let action="HOLD";
-
-
-
-    if(confidence >= 0.65){
-
-      action="EXECUTE";
-
-    }
-
-    else if(confidence >=0.35){
-
-      action="WAIT";
-
-    }
-
-
-
-    const decision={
-
-
-      type:
-      "elohim.decision",
-
-
-      action,
-
-
-      confidence,
-
-
-      source:
-      "ELOHIM_RUNTIME",
-
-
-      timestamp:
-      Date.now()
+        timestamp:null
 
     };
 
 
 
-    lastDecision=decision;
+    function evaluate(signal){
+
+
+        if(!signal){
+
+            return {
+
+                type:"elohim.decision",
+
+                action:"WAIT",
+
+                confidence:0,
+
+                source:"ELOHIM_RUNTIME"
+
+            };
+
+        }
 
 
 
-    state.decisions++;
+        const confidence =
+        Number(
+            signal.confidence || 0
+        );
 
-    state.timestamp =
-    Date.now();
+
+
+        let action="WAIT";
 
 
 
-    if(bus){
+        if(
+            signal.action==="BUY" &&
+            confidence >=0.65
+        ){
 
-      bus.emit(
-        "elohim.decision",
-        decision
-      );
+            action="BUY";
+
+        }
+
+
+
+        else if(
+            signal.action==="SELL" &&
+            confidence >=0.65
+        ){
+
+            action="SELL";
+
+        }
+
+
+
+        else {
+
+            action="HOLD";
+
+        }
+
+
+
+
+        const decision = {
+
+
+            type:
+            "elohim.decision",
+
+
+            action,
+
+
+            confidence,
+
+
+            symbol:
+            signal.symbol || "BTC",
+
+
+            source:
+            "ELOHIM_RUNTIME",
+
+
+            timestamp:
+            Date.now()
+
+        };
+
+
+
+        lastDecision =
+        decision;
+
+
+
+        state.decisions++;
+
+
+        state.timestamp =
+        Date.now();
+
+
+
+
+        if(bus){
+
+
+            if(typeof bus.publish==="function"){
+
+                bus.publish(
+                    "elohim.decision",
+                    decision
+                );
+
+            }
+
+            else if(typeof bus.emit==="function"){
+
+                bus.emit(
+                    "elohim.decision",
+                    decision
+                );
+
+            }
+
+        }
+
+
+
+
+        if(
+            chronicle &&
+            typeof chronicle.record==="function"
+        ){
+
+            chronicle.record(
+                decision
+            );
+
+        }
+
+
+
+        console.log(
+
+            "[ELOHIM DECISION]",
+            decision.action,
+            decision.confidence
+
+        );
+
+
+
+        return decision;
+
 
     }
 
 
 
-    if(chronicle?.record){
 
-      chronicle.record(
-        decision
-      );
+
+    function init(){
+
+
+        if(!bus)
+            return;
+
+
+
+        if(typeof bus.subscribe==="function"){
+
+
+            bus.subscribe(
+
+                "sophia.signal",
+
+                (signal)=>{
+
+                    evaluate(
+                        signal
+                    );
+
+                }
+
+            );
+
+
+        }
+
+
+        else if(typeof bus.on==="function"){
+
+
+            bus.on(
+
+                "sophia.signal",
+
+                (signal)=>{
+
+                    evaluate(
+                        signal
+                    );
+
+                }
+
+            );
+
+
+        }
+
+
+
+        console.log(
+            "[ELOHIM ONLINE]"
+        );
+
 
     }
 
 
 
-    return decision;
 
 
-  }
+    return {
 
 
+        init,
 
 
-
-  return {
-
-
-    evaluate,
+        evaluate,
 
 
-    decide:evaluate,
+        decide:evaluate,
 
 
-    getDecision(){
+        getDecision(){
 
-      return lastDecision;
+            return lastDecision;
 
-    },
-
-
-    status(){
-
-      return state;
-
-    }
+        },
 
 
-  };
+        status(){
+
+            return state;
+
+        }
+
+
+    };
 
 
 }
-
-
 
 
 module.exports =
