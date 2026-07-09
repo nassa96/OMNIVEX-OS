@@ -5,6 +5,12 @@ const agentRegistry = require("../agents/agentRegistry");
 const EvolutionController =
 require("../../core/forge/evolution/evolutionController");
 
+const createMercuryStreamCore =
+require("../mercuryStreamCore");
+
+const mercuryAdapter =
+require("../mercuryAdapter");
+
 
 class OmnivexRuntime {
 
@@ -17,6 +23,17 @@ class OmnivexRuntime {
 
         this.forge =
         new EvolutionController();
+
+
+        this.mercury =
+        createMercuryStreamCore({
+
+            bus: mercuryAdapter,
+
+            chronicle:
+            mercuryAdapter.chronicle
+
+        });
 
     }
 
