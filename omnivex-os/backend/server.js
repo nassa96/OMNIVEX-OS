@@ -1,21 +1,20 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const http = require("http");
 
-const runtime =
-require("./kernel/runtime/omnivexRuntime");
+const runtime = require("./kernel/runtime/omnivexRuntime");
+const feedManager = require("./kernel/feeds/feedManager");
+const eventBus = require("./kernel/eventBus");
 
-const feedManager =
-require("./kernel/feeds/feedManager");
-
-const stateStore =
-require("./kernel/state/stateStore");
+require("./kernel/runtime/elohimRuntimeBridge");
 
 
 const app = express();
 
+
 app.use(cors());
 app.use(express.json());
+
 
 
 app.get("/health",(req,res)=>{
@@ -23,91 +22,119 @@ app.get("/health",(req,res)=>{
     res.json({
 
         system:"OMNIVEX_OS_PRIME",
-        status:"ONLINE"
+
+        status:"ONLINE",
+
+        heartbeat:
+            runtime.status().heartbeat || null,
+
+        events:
+            eventBus.stats(),
+
+        timestamp:
+            Date.now()
 
     });
 
 });
 
 
-app.get("/api/runtime/state",(req,res)=>{
 
-    res.json({
+app.get("/state",(req,res)=>{
 
-        system:"OMNIVEX_OS_PRIME",
-        runtime:stateStore.get()
-
-    });
+    res.json(
+        runtime.status()
+    );
 
 });
 
-
-const server =
-http.createServer(app);
 
 
 const PORT =
 process.env.PORT || 3000;
 
 
-server.listen(PORT,()=>{
+
+const server =
+app.listen(
+    PORT,
+    ()=>{
+
+        console.log(
+            "================================="
+        );
+
+        console.log(
+            "VEYRONIX INTELLIGENCE ENGINE"
+        );
+
+        console.log(
+            "OMNIVEX OS PRIME CORE ONLINE"
+        );
+
+        console.log(
+            "RUNTIME HEARTBEAT ACTIVE"
+        );
+
+        console.log(
+            "API PORT:",
+            PORT
+        );
+
+        console.log(
+            "================================="
+        );
 
 
-console.log(`
-=================================
-VEYRONIX INTELLIGENCE ENGINE
-OMNIVEX OS PRIME CORE ONLINE
-RUNTIME HEARTBEAT ACTIVE
-API PORT: ${PORT}
-=================================
-`);
+        try{
+
+            feedManager.start();
+
+            runtime.start();
+
+        }
+
+        catch(err){
+
+            console.error(
+                "[BOOT ERROR]",
+                err.message
+            );
+
+        }
 
 
-try{
-
-    feedManager.start();
-
-    
-
-
-    runtime.start();
-
-    
-
-
-}
-catch(err){
-
-    console.error(
-        "[BOOT ERROR]",
-        err.message
-    );
-
-}
-
-
-});
-
-
-process.on("SIGINT",()=>{
-
-
-console.log(
-"[OMNIVEX SHUTDOWN]"
+    }
 );
 
 
-try{
 
-feedManager.stop();
-
-runtime.stop();
-
-}
-catch(err){}
+process.on(
+    "SIGINT",
+    ()=>{
 
 
-process.exit(0);
+        console.log(
+            "[OMNIVEX SHUTDOWN]"
+        );
 
 
-});
+        try{
+
+            feedManager.stop();
+
+            runtime.stop();
+
+        }
+        catch(err){}
+
+
+
+        server.close(
+            ()=>process.exit(0)
+        );
+
+
+    }
+);
+
