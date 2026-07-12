@@ -17,3 +17,13 @@ npm-debug.log*
 *.before_*.js
 *.bak
 backups/
+
+# Parent runtime backups
+../backups/
+../omnivex-os-BACKUP-20260708/
+
+# Local backup files
+*.backup.js
+*.before-*.js
+*.bak
+

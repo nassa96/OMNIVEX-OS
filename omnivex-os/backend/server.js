@@ -2,16 +2,15 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const { WebSocketServer } = require("ws");
 
 const eventBus = require("./kernel/eventBus");
 
 // Core runtime
-const runtime =
-    require("./kernel/runtime/omnivexRuntime");
+const runtime = require("./kernel/runtime/omnivexRuntime");
 
 // Feed layer
-const feedManager =
-    require("./kernel/feeds/feedManager");
+const feedManager = require("./kernel/feeds/feedManager");
 
 // Governance chain
 require("./kernel/runtime/elohimRuntimeBridge");
@@ -20,8 +19,7 @@ require("./kernel/aegis/aegisCore");
 require("./kernel/saint/saintExecutionEngine");
 
 // Memory layer
-const chronicle =
-    require("./kernel/memory/chronicleStore");
+const chronicle = require("./kernel/memory/chronicleStore");
 
 
 const app = express();
@@ -31,7 +29,7 @@ app.use(express.json());
 
 
 // =====================================
-// HEALTH CHECK
+// HEALTH
 // =====================================
 
 app.get(
@@ -49,11 +47,6 @@ app.get(
             heartbeat:
                 runtime.status().heartbeat || null,
 
-            agents:
-                Object.keys(
-                    runtime.getAgents()
-                ).length,
-
             events:
                 eventBus.stats(),
 
@@ -70,7 +63,7 @@ app.get(
 
 
 // =====================================
-// FULL RUNTIME STATE
+// STATE
 // =====================================
 
 app.get(
@@ -86,7 +79,7 @@ app.get(
 
 
 // =====================================
-// 16 AGENT CONTROL PLANE
+// PRIME-16 AGENT API
 // =====================================
 
 app.get(
@@ -94,7 +87,7 @@ app.get(
     (req,res)=>{
 
         const agents =
-            runtime.getAgents();
+            runtime.status().agents || {};
 
 
         res.json({
@@ -181,6 +174,88 @@ const server =
 
 
 // =====================================
+// ATLAS WEBSOCKET BRIDGE
+// =====================================
+
+const wss =
+    new WebSocketServer({
+        server
+    });
+
+
+wss.on(
+    "connection",
+    (socket)=>{
+
+        console.log(
+            "[ATLAS WS CONNECTED]"
+        );
+
+
+        socket.send(
+            JSON.stringify({
+
+                type:
+                    "runtime.connected",
+
+                system:
+                    "OMNIVEX_OS_PRIME",
+
+                timestamp:
+                    Date.now()
+
+            })
+        );
+
+
+        socket.on(
+            "close",
+            ()=>{
+
+                console.log(
+                    "[ATLAS WS DISCONNECTED]"
+                );
+
+            }
+        );
+
+    }
+);
+
+
+// =====================================
+// EVENT BROADCAST
+// =====================================
+
+eventBus.on(
+    "event",
+    (payload)=>{
+
+        const message =
+            JSON.stringify(payload);
+
+
+        wss.clients.forEach(
+            (client)=>{
+
+                if(
+                    client.readyState === 1
+                ){
+
+                    client.send(
+                        message
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
+
+
+// =====================================
 // GRACEFUL SHUTDOWN
 // =====================================
 
@@ -201,7 +276,15 @@ process.on(
         catch(e){}
 
 
-        runtime.stop();
+        try{
+
+            runtime.stop();
+
+        }
+        catch(e){}
+
+
+        wss.close();
 
 
         server.close(

@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
+import {
+  getRuntimeAgents,
+  getRuntimeHealth
+} from "../../lib/runtimeClient";
+
 
 export default function Dashboard(){
 
   const [runtime,setRuntime] = useState(null);
+  const [agents,setAgents] = useState({});
   const [wsStatus,setWsStatus] = useState("OFFLINE");
   const [events,setEvents] = useState([]);
 
@@ -13,18 +19,26 @@ export default function Dashboard(){
 
       try{
 
-        const data =
-          await fetch(
-            "http://localhost:3000/api/runtime/state"
-          )
-          .then(r=>r.json());
+        const health =
+          await getRuntimeHealth();
+
+        const agentData =
+          await getRuntimeAgents();
 
 
-        setRuntime(data.runtime);
+        setRuntime(health);
+
+        setAgents(
+          agentData.agents || {}
+        );
+
 
       }catch(err){
 
-        console.log(err);
+        console.log(
+          "[ATLAS RUNTIME ERROR]",
+          err.message
+        );
 
       }
 
@@ -38,6 +52,7 @@ export default function Dashboard(){
 
 
     return ()=>clearInterval(timer);
+
 
   },[]);
 
@@ -74,6 +89,7 @@ export default function Dashboard(){
           ...prev.slice(0,49)
         ]);
 
+
       }catch{}
 
     };
@@ -86,140 +102,129 @@ export default function Dashboard(){
 
 
 
-  const agents =
-    runtime?.agents || {};
+return (
+
+<div className="dashboard">
+
+
+<section className="hero-panel">
+
+<h1>
+ATLAS TERMINAL
+</h1>
+
+<p>
+VEYRONIX AUTONOMOUS INTELLIGENCE COMMAND CENTER
+</p>
+
+<div>
+OMNIVEX OS PRIME • {wsStatus}
+</div>
+
+</section>
 
 
 
-  return (
-
-    <div className="dashboard">
+<div className="metric-grid">
 
 
-      <section className="hero-panel">
-
-        <h1>
-          ATLAS TERMINAL
-        </h1>
-
-        <p>
-          VEYRONIX AUTONOMOUS INTELLIGENCE COMMAND CENTER
-        </p>
-
-        <div>
-          OMNIVEX OS PRIME • {wsStatus}
-        </div>
-
-      </section>
+<Card
+title="SYSTEM"
+value={runtime?.system || "BOOTING"}
+/>
 
 
-
-      <div className="metric-grid">
-
-        <Card
-          title="SYSTEM"
-          value={runtime?.system || "BOOTING"}
-        />
+<Card
+title="STATUS"
+value={runtime?.status || "--"}
+/>
 
 
-        <Card
-          title="HEARTBEAT"
-          value={runtime?.heartbeat || 0}
-        />
+<Card
+title="HEARTBEAT"
+value={runtime?.heartbeat || 0}
+/>
 
 
-        <Card
-          title="MARKET"
-          value={runtime?.market?.symbol || "--"}
-        />
+<Card
+title="EVENTS"
+value={runtime?.events?.events || 0}
+/>
 
 
-        <Card
-          title="PRICE"
-          value={
-            "$"+(runtime?.market?.price || 0)
-          }
-        />
-
-
-        <Card
-          title="TREND"
-          value={runtime?.market?.trend || "--"}
-        />
-
-
-        <Card
-          title="DECISION"
-          value={runtime?.decision?.action || "--"}
-        />
-
-
-      </div>
+</div>
 
 
 
-      <section className="panel">
+<section className="panel">
 
-        <h2>
-          AGENT NETWORK
-        </h2>
-
-
-        <div className="metric-grid">
-
-          {
-            Object.entries(agents)
-            .map(([name,data])=>(
-
-              <Card
-                key={name}
-                title={name}
-                value={data.status}
-              />
-
-            ))
-          }
-
-        </div>
-
-      </section>
+<h2>
+PRIME-16 AGENT NETWORK
+</h2>
 
 
-
-      <section className="panel">
-
-        <h2>
-          LIVE INTELLIGENCE STREAM
-        </h2>
+<div className="metric-grid">
 
 
-        <div className="event-stream">
+{
+Object.entries(agents).map(
+([name,data])=>(
 
-          {
-            events.map((event,i)=>(
+<Card
+key={name}
+title={name}
+value={data.status}
+/>
 
-              <div
-                className="event"
-                key={i}
-              >
-                {event.type || "EVENT"}
-                <br/>
-                {JSON.stringify(event)}
-              </div>
-
-            ))
-          }
-
-        </div>
+))
+}
 
 
-      </section>
+</div>
+
+</section>
 
 
 
-    </div>
+<section className="panel">
 
-  );
+<h2>
+LIVE INTELLIGENCE STREAM
+</h2>
+
+
+<div className="event-stream">
+
+{
+events.map(
+(event,i)=>(
+
+<div
+className="event"
+key={i}
+>
+
+{event.type || "EVENT"}
+
+<br/>
+
+{JSON.stringify(event)}
+
+</div>
+
+))
+}
+
+</div>
+
+
+</section>
+
+
+</div>
+
+);
+
 
 }
 
@@ -227,20 +232,22 @@ export default function Dashboard(){
 
 function Card({title,value}){
 
-  return (
+return (
 
-    <div className="metric-card">
+<div className="metric-card">
 
-      <div className="metric-title">
-        {title}
-      </div>
+<div className="metric-title">
+{title}
+</div>
 
-      <div className="metric-value">
-        {value}
-      </div>
 
-    </div>
+<div className="metric-value">
+{value}
+</div>
 
-  );
+
+</div>
+
+);
 
 }
