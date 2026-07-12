@@ -70,7 +70,6 @@ export default function Dashboard(){
 
   useEffect(()=>{
 
-
     const ws =
       connectRuntimeStream({
 
@@ -106,16 +105,15 @@ export default function Dashboard(){
       });
 
 
-
-    return ()=>{
-
-      ws.close();
-
-    };
+    return ()=>ws.close();
 
 
   },[]);
 
+
+
+  const governance =
+    runtime?.chronicle?.data?.governance || {};
 
 
   return (
@@ -138,6 +136,7 @@ export default function Dashboard(){
         <div>
           OMNIVEX OS PRIME • {wsStatus}
         </div>
+
 
       </section>
 
@@ -177,6 +176,52 @@ export default function Dashboard(){
       <section className="panel">
 
         <h2>
+          GOVERNANCE CONTROL PLANE
+        </h2>
+
+
+        <div className="metric-grid">
+
+          <Card
+            title="INTELLIGENCE"
+            value={governance.intelligence || "SOPHIA"}
+          />
+
+
+          <Card
+            title="AUTHORITY"
+            value={governance.authority || "ELOHIM"}
+          />
+
+
+          <Card
+            title="RISK"
+            value={governance.risk || "AEGIS"}
+          />
+
+
+          <Card
+            title="EXECUTION"
+            value={governance.execution || "SAINT"}
+          />
+
+
+          <Card
+            title="MEMORY"
+            value={governance.memory || "CHRONICLE"}
+          />
+
+
+        </div>
+
+
+      </section>
+
+
+
+      <section className="panel">
+
+        <h2>
           PRIME-16 AGENT NETWORK
         </h2>
 
@@ -207,7 +252,6 @@ export default function Dashboard(){
 
 
       <section className="panel">
-
 
         <h2>
           LIVE INTELLIGENCE STREAM
