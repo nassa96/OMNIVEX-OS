@@ -11,3 +11,9 @@ logs/
 # Node
 node_modules/
 npm-debug.log*
+
+# Runtime backups
+*.backup.js
+*.before_*.js
+*.bak
+backups/
