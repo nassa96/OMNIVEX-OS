@@ -33,7 +33,6 @@ export function getRuntimeAgents(){
 }
 
 
-
 export function getRuntimeHealth(){
 
   return request(
@@ -43,7 +42,6 @@ export function getRuntimeHealth(){
 }
 
 
-
 export function getRuntimeState(){
 
   return request(
@@ -51,7 +49,6 @@ export function getRuntimeState(){
   );
 
 }
-
 
 
 export function connectRuntimeStream(
@@ -66,48 +63,35 @@ export function connectRuntimeStream(
 
   ws.onopen = ()=>{
 
-    if(handlers.onOpen){
-
-      handlers.onOpen();
-
-    }
+    handlers.onOpen?.();
 
   };
 
 
   ws.onclose = ()=>{
 
-    if(handlers.onClose){
-
-      handlers.onClose();
-
-    }
+    handlers.onClose?.();
 
   };
 
 
   ws.onmessage = (message)=>{
 
-    try{
+    try {
 
       const event =
         JSON.parse(
           message.data
         );
 
-
-      if(handlers.onMessage){
-
-        handlers.onMessage(
-          event
-        );
-
-      }
+      handlers.onMessage?.(
+        event
+      );
 
 
-    }catch(error){
+    } catch(error){
 
-      console.error(
+      console.log(
         "[RUNTIME STREAM ERROR]",
         error.message
       );
