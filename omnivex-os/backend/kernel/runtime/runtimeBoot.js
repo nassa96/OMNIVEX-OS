@@ -1,41 +1,11 @@
-const registry =
-require("./runtimeRegistry");
+const startRuntime = require("./startRuntime");
 
+module.exports = function runtimeBoot(){
 
-function bootRuntimeAgents(){
+    console.log(
+        "[OMNIVEX RUNTIME BOOT]"
+    );
 
-registry.register(
-"SOPHIA"
-);
+    return startRuntime();
 
-
-registry.register(
-"MERCURY"
-);
-
-
-registry.register(
-"AEGIS"
-);
-
-
-registry.register(
-"ELOHIM"
-);
-
-
-registry.register(
-"SAINT"
-);
-
-
-registry.register(
-"CHRONICLE"
-);
-
-
-}
-
-
-module.exports =
-bootRuntimeAgents;
+};

@@ -1,20 +1,14 @@
-const eventBus = require("../eventBus");
-const Tartarus = require("../tartarus/tartarusEngine");
-
 /**
- * OMNIVEX OS — SOPHIA INTELLIGENCE ENGINE
+ * OMNIVEX OS PRIME
  *
- * Responsibilities:
- * - consume MERCURY market.tick events
- * - analyze momentum/trend
- * - generate adaptive strategies
- * - emit sophia.signal
- * - evolve strategy pool
+ * SOPHIA EVOLUTION ENGINE
+ *
+ * Market intelligence and signal generation layer.
  */
 
+const eventBus = require("../eventBus");
 
 class SophiaEvolutionEngine {
-
 
     constructor(){
 
@@ -26,46 +20,63 @@ class SophiaEvolutionEngine {
 
         this.history = [];
 
+        this.initialized = false;
+
     }
-
-
 
 
     init(){
 
-        eventBus.subscribe(
-            "market.tick",
-            (tick)=>{
-
-                this.marketState =
-                tick.data || tick;
-
-                this.history.push(
-                    this.marketState
-                );
+        if(this.initialized){
+            return;
+        }
 
 
-                if(this.history.length > 50){
-                    this.history.shift();
-                }
+        this.initialized = true;
 
 
-                this.analyze();
+        const handler = (event)=>{
 
-                this.evolve();
+            const market =
+                event.data || event;
+
+
+            if(!market.price){
+                return;
+            }
+
+
+            this.marketState = market;
+
+
+            this.history.push(
+                market
+            );
+
+
+            if(this.history.length > 50){
+
+                this.history.shift();
 
             }
+
+
+            this.analyze();
+
+            this.evolve();
+
+        };
+
+
+        eventBus.subscribe(
+            "market.tick",
+            handler
         );
 
 
-
         eventBus.subscribe(
-            "tartarus.update",
-            (update)=>{
-
-                this.applyLearning(update);
-
-            }
+            "mercury.tick",
+            handler
         );
 
 
@@ -77,103 +88,90 @@ class SophiaEvolutionEngine {
 
 
 
-
-
-
-
     analyze(){
 
         const market =
-        this.marketState;
+            this.marketState || {};
 
 
         const price =
-        Number(
-            market.price || 0
-        );
+            Number(
+                market.price || 0
+            );
 
 
         const previous =
-        this.history.length > 1
-        ?
-        Number(
-            this.history[
-                this.history.length - 2
-            ].price || price
-        )
-        :
-        price;
-
+            this.history.length > 1
+                ? Number(
+                    this.history[
+                        this.history.length - 2
+                    ].price || price
+                )
+                : price;
 
 
         let change = 0;
 
 
-        if(previous > 0){
+        if(previous){
 
             change =
-            (price - previous)
-            /
-            previous;
+                (price - previous) /
+                previous;
 
         }
 
 
+        let action =
+            "HOLD";
 
-        let action="HOLD";
 
-
-        let confidence=0.5;
+        let confidence =
+            0.5;
 
 
 
         if(change > 0.001){
 
-            action="BUY";
+            action =
+                "BUY";
 
             confidence =
-            Math.min(
-                0.95,
-                0.5 + Math.abs(change)*100
-            );
+                0.95;
 
         }
-
 
 
         if(change < -0.001){
 
-            action="SELL";
+            action =
+                "SELL";
 
             confidence =
-            Math.min(
-                0.95,
-                0.5 + Math.abs(change)*100
-            );
+                0.95;
 
         }
 
 
 
+        const signal = {
 
-        const signal={
+            source:
+                "SOPHIA",
 
-            type:
-            "sophia.signal",
+            authority:
+                "SOPHIA_ENGINE",
 
 
             action,
 
-
-            confidence:
-            Number(
-                confidence.toFixed(3)
-            ),
+            confidence,
 
 
             symbol:
-            market.asset ||
-            "BTC",
+                market.asset ||
+                market.symbol ||
+                "BTC",
 
 
             price,
@@ -183,17 +181,30 @@ class SophiaEvolutionEngine {
 
 
             timestamp:
-            Date.now()
+                Date.now()
 
         };
 
 
 
         eventBus.publish(
+
             "sophia.signal",
+
             signal
+
         );
 
+
+        console.log(
+
+            "[SOPHIA SIGNAL]",
+
+            action,
+
+            confidence
+
+        );
 
 
         return signal;
@@ -202,23 +213,22 @@ class SophiaEvolutionEngine {
 
 
 
-
-
-
-
     evolve(){
 
+        const strategy = {
 
-        if(!this.marketState)
-            return;
+            timestamp:
+                Date.now(),
 
 
+            market:
+                this.marketState,
 
-        const strategy =
-        this.generateStrategy(
-            this.marketState
-        );
 
+            historySize:
+                this.history.length
+
+        };
 
 
         this.strategyPool.push(
@@ -226,239 +236,57 @@ class SophiaEvolutionEngine {
         );
 
 
-
-        if(this.strategyPool.length > 20){
+        if(this.strategyPool.length > 100){
 
             this.strategyPool.shift();
 
         }
 
 
-
         this.activeStrategy =
-        this.selectBestStrategy();
-
-
-
-        eventBus.publish(
-            "sophia.strategy",
-            this.activeStrategy
-        );
+            strategy;
 
 
     }
 
 
 
-
-
-
-
-    generateStrategy(market){
-
-
-        const volatility =
-        Math.random();
-
-
-
-        let bias=0;
-
-
-        let threshold=0.5;
-
-
-
-        if(volatility > .6){
-
-            bias=1;
-
-            threshold=.6;
-
-        }
-
-
-        if(volatility < .3){
-
-            bias=.3;
-
-            threshold=.4;
-
-        }
-
-
+    status(){
 
         return {
 
-            type:
-            "adaptive",
+            initialized:
+                this.initialized,
 
 
-            bias,
+            strategies:
+                this.strategyPool.length,
 
 
-            risk:
-            volatility,
+            history:
+                this.history.length,
 
 
-            threshold,
+            activeStrategy:
+                this.activeStrategy,
 
-
-            symbol:
-            market.asset || "BTC"
+            timestamp:
+                Date.now()
 
         };
 
-
     }
-
-
-
-
-
-
-
-    applyLearning(update){
-
-
-        if(!update)
-            return;
-
-
-
-        const state =
-        update.strategyState;
-
-
-
-        if(!state)
-            return;
-
-
-
-        if(state.bias < .8){
-
-            this.increaseConservatism();
-
-        }
-
-
-        if(state.bias > 1.5){
-
-            this.increaseAggression();
-
-        }
-
-
-    }
-
-
-
-
-
-
-
-    increaseConservatism(){
-
-
-        this.strategyPool.forEach(
-            s=>{
-
-                s.threshold += .02;
-
-                s.bias *= .95;
-
-            }
-        );
-
-
-    }
-
-
-
-
-
-
-    increaseAggression(){
-
-
-        this.strategyPool.forEach(
-            s=>{
-
-                s.threshold -= .02;
-
-                s.bias *= 1.05;
-
-            }
-        );
-
-
-    }
-
-
-
-
-
-
-
-
-    selectBestStrategy(){
-
-
-        if(
-            this.strategyPool.length===0
-        )
-            return null;
-
-
-
-        return this.strategyPool.reduce(
-            (best,current)=>{
-
-
-                const a =
-                Math.abs(best.bias)
-                /
-                (best.threshold+.01);
-
-
-
-                const b =
-                Math.abs(current.bias)
-                /
-                (current.threshold+.01);
-
-
-
-                return b>a
-                ?
-                current
-                :
-                best;
-
-
-            }
-        );
-
-
-    }
-
-
-
-
-
-
-
-    getActiveStrategy(){
-
-        return this.activeStrategy;
-
-    }
-
 
 }
 
 
 
+const sophia =
+    new SophiaEvolutionEngine();
+
+
 module.exports =
-new SophiaEvolutionEngine();
+    sophia;
+
+
+sophia.init();

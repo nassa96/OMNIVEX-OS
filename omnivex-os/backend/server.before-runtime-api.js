@@ -6,12 +6,10 @@ const cors = require("cors");
 const eventBus = require("./kernel/eventBus");
 
 // Core runtime
-const runtime =
-    require("./kernel/runtime/omnivexRuntime");
+const runtime = require("./kernel/runtime/omnivexRuntime");
 
 // Feed layer
-const feedManager =
-    require("./kernel/feeds/feedManager");
+const feedManager = require("./kernel/feeds/feedManager");
 
 // Governance chain
 require("./kernel/runtime/elohimRuntimeBridge");
@@ -20,8 +18,7 @@ require("./kernel/aegis/aegisCore");
 require("./kernel/saint/saintExecutionEngine");
 
 // Memory layer
-const chronicle =
-    require("./kernel/memory/chronicleStore");
+const chronicle = require("./kernel/memory/chronicleStore");
 
 
 const app = express();
@@ -30,13 +27,9 @@ app.use(cors());
 app.use(express.json());
 
 
-// =====================================
-// HEALTH CHECK
-// =====================================
-
 app.get(
     "/health",
-    (req,res)=>{
+    (req, res) => {
 
         res.json({
 
@@ -48,11 +41,6 @@ app.get(
 
             heartbeat:
                 runtime.status().heartbeat || null,
-
-            agents:
-                Object.keys(
-                    runtime.getAgents()
-                ).length,
 
             events:
                 eventBus.stats(),
@@ -69,13 +57,9 @@ app.get(
 );
 
 
-// =====================================
-// FULL RUNTIME STATE
-// =====================================
-
 app.get(
     "/state",
-    (req,res)=>{
+    (req, res) => {
 
         res.json(
             runtime.status()
@@ -85,44 +69,6 @@ app.get(
 );
 
 
-// =====================================
-// 16 AGENT CONTROL PLANE
-// =====================================
-
-app.get(
-    "/api/runtime/agents",
-    (req,res)=>{
-
-        const agents =
-            runtime.getAgents();
-
-
-        res.json({
-
-            system:
-                "OMNIVEX_OS_PRIME",
-
-            architecture:
-                "PRIME-16_AGENT_RUNTIME",
-
-            total:
-                Object.keys(agents).length,
-
-            agents,
-
-            timestamp:
-                Date.now()
-
-        });
-
-    }
-);
-
-
-// =====================================
-// SERVER START
-// =====================================
-
 const PORT =
     process.env.PORT || 3000;
 
@@ -130,7 +76,7 @@ const PORT =
 const server =
     app.listen(
         PORT,
-        ()=>{
+        () => {
 
             console.log(
                 "================================="
@@ -158,11 +104,9 @@ const server =
             );
 
 
-            try{
+            try {
 
                 feedManager.start();
-
-                runtime.init();
 
                 runtime.start();
 
@@ -180,40 +124,44 @@ const server =
 );
 
 
-// =====================================
-// GRACEFUL SHUTDOWN
-// =====================================
+function shutdown(signal){
 
-process.on(
-    "SIGINT",
-    ()=>{
-
-        console.log(
-            "[OMNIVEX SHUTDOWN SIGINT]"
-        );
+    console.log(
+        `[OMNIVEX SHUTDOWN ${signal}]`
+    );
 
 
-        try{
+    try {
 
-            feedManager.stop();
-
-        }
-        catch(e){}
-
+        feedManager.stop();
 
         runtime.stop();
 
+    }
+    catch(error){
 
-        server.close(
-            ()=>{
-
-                process.exit(0);
-
-            }
+        console.error(
+            "[SHUTDOWN ERROR]",
+            error.message
         );
 
     }
+
+
+    server.close(
+        () => process.exit(0)
+    );
+
+}
+
+
+process.on(
+    "SIGINT",
+    () => shutdown("SIGINT")
 );
 
 
-module.exports = server;
+process.on(
+    "SIGTERM",
+    () => shutdown("SIGTERM")
+);

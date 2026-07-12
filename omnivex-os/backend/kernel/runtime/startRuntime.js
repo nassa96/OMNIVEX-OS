@@ -1,11 +1,10 @@
 /**
  * OMNIVEX OS PRIME
  *
- * Runtime access bridge.
+ * Runtime launcher adapter.
  *
- * IMPORTANT:
- * Runtime lifecycle is controlled by server.js.
- * This file no longer starts the runtime automatically.
+ * Runtime ownership belongs to server.js.
+ * This module only exposes the runtime instance.
  */
 
 const runtime = require("./omnivexRuntime");

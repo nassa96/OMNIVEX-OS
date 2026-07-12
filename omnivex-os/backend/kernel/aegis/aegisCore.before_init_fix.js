@@ -26,46 +26,83 @@ class AegisCore {
     init(){
 
         if(this.initialized){
+
             return;
+
         }
 
 
         this.initialized = true;
 
 
-        eventBus.subscribe(
             "aegis.evaluate",
+
             (event)=>{
 
+
                 const signal =
+
                     event.data?.signal ||
+
+                    event.signal ||
+
                     null;
 
 
+
                 const decision =
-                    this.evaluate(
-                        signal
-                    );
+
+                    this.evaluate(signal);
+
 
 
                 this.route(
+
                     decision,
+
                     signal
+
                 );
 
+
             }
+
         );
 
 
-        this.state.status =
-            "ONLINE";
+
+        eventBus.subscribe(
+
+            "aurin.execution.approved",
+
+            (event)=>{
+
+
+                this.evaluateRequest(
+
+                    event.data
+
+                );
+
+
+            }
+
+        );
+
+
+
+        this.state.status = "ONLINE";
 
 
         console.log(
+
             "[AEGIS ONLINE]"
+
         );
 
     }
+
+
 
 
     evaluate(signal){

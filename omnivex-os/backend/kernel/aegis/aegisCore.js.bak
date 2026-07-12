@@ -39,6 +39,7 @@ class AegisCore {
 
                 const signal =
                     event.data?.signal ||
+                    event.signal ||
                     null;
 
 

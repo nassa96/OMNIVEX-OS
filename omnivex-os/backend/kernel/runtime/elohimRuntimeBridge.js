@@ -1,27 +1,17 @@
 /**
  * OMNIVEX OS PRIME
  *
- * ELOHIM RUNTIME BRIDGE
- *
- * Connects:
- *
- * SOPHIA SIGNAL
- *        |
- *        v
- * ELOHIM DECISION
- *
+ * ELOHIM GOVERNANCE BRIDGE
  */
 
 const eventBus =
 require("../eventBus");
 
 
-
 class ElohimRuntimeBridge {
 
 
     constructor(){
-
 
         this.state = {
 
@@ -36,58 +26,50 @@ class ElohimRuntimeBridge {
 
         this.init();
 
-
     }
-
-
 
 
 
     init(){
 
 
-        if(
-            eventBus &&
-            typeof eventBus.subscribe === "function"
-        ){
+        eventBus.subscribe(
+
+            "sophia.signal",
+
+            (event)=>{
 
 
-            eventBus.subscribe(
-
-                "sophia.signal",
-
-                (signal)=>{
-
-
-                    const decision =
-                    this.resolve({
-
-                        signal
-
-                    });
+                const signal =
+                event.data || event;
 
 
 
-                    eventBus.publish(
-
-                        "elohim.decision",
-
-                        decision
-
-                    );
+                const decision =
+                this.resolve(signal);
 
 
-                }
 
-            );
+                eventBus.publish(
+
+                    "elohim.decision",
+
+                    decision
+
+                );
 
 
-            console.log(
-                "[ELOHIM BRIDGE ONLINE]"
-            );
+            }
+
+        );
 
 
-        }
+
+        console.log(
+
+            "[ELOHIM BRIDGE ONLINE]"
+
+        );
 
 
     }
@@ -96,38 +78,16 @@ class ElohimRuntimeBridge {
 
 
 
+    resolve(signal){
 
 
-    resolve(context){
-
-
-        if(!context){
-
-
-            return {
-
-                type:
-                "elohim.decision",
-
-                action:
-                "HOLD",
-
-                confidence:
-                0,
-
-                reason:
-                "NO_CONTEXT"
-
-            };
-
-
-        }
+        signal =
+        signal || {};
 
 
 
-
-        const signal =
-        context.signal || {};
+        let action =
+        "WAIT";
 
 
 
@@ -138,34 +98,25 @@ class ElohimRuntimeBridge {
 
 
 
-        let action =
-        "HOLD";
-
-
-
         if(
             signal.action === "BUY" &&
             confidence >= 0.65
         ){
 
-            action =
-            "BUY";
+            action="BUY";
 
         }
 
 
 
-        else if(
+        if(
             signal.action === "SELL" &&
             confidence >= 0.65
         ){
 
-            action =
-            "SELL";
+            action="SELL";
 
         }
-
-
 
 
 
@@ -183,11 +134,12 @@ class ElohimRuntimeBridge {
 
 
             symbol:
-            signal.symbol || "BTC",
+            signal.symbol ||
+            "BTC",
 
 
             source:
-            "ELOHIM_RUNTIME_BRIDGE",
+            "ELOHIM",
 
 
             timestamp:
@@ -199,7 +151,6 @@ class ElohimRuntimeBridge {
 
 
         this.state.decisions++;
-
 
         this.state.lastDecision =
         decision;
@@ -220,27 +171,19 @@ class ElohimRuntimeBridge {
 
         return decision;
 
-
     }
-
-
-
 
 
 
 
     status(){
 
-
         return this.state;
-
 
     }
 
 
 }
-
-
 
 
 

@@ -1,22 +1,47 @@
-const stateStore = require("../state/stateStore");
-const chronicle = require("../memory/chronicleStore");
-const agentRegistry = require("../agents/agentRegistry");
+/**
+ * OMNIVEX OS PRIME
+ *
+ * CANONICAL 16 AGENT RUNTIME CORE
+ *
+ * Runtime authority layer.
+ *
+ * Source of truth:
+ * backend/kernel/registry/canonicalAgents.js
+ *
+ * Responsibilities:
+ * - Maintain runtime heartbeat
+ * - Expose canonical agent state
+ * - Preserve governance chain
+ * - Publish runtime events
+ * - Feed ATLAS control plane
+ */
+
+
+const stateStore =
+    require("../state/stateStore");
+
+const chronicle =
+    require("../memory/chronicleStore");
+
+const agentRegistry =
+    require("../agents/agentRegistry");
 
 const eventBus =
-require("../eventBus");
+    require("../eventBus");
 
-const sophia =
-require("../sophia/sophiaEvolutionEngine");
+const pipelineRouter =
+    require("./pipelineRouter");
 
-const EvolutionController =
-require("../../core/forge/evolution/evolutionController");
 
-const createMercuryStreamCore =
-require("../mercuryStreamCore");
-
-const mercuryAdapter =
-require("../mercuryAdapter");
-
+const GOVERNANCE_CHAIN = [
+    "STREAMCORE",
+    "MERCURY",
+    "SOPHIA",
+    "ELOHIM",
+    "AEGIS",
+    "SAINT",
+    "CHRONICLE"
+];
 
 
 class OmnivexRuntime {
@@ -24,70 +49,47 @@ class OmnivexRuntime {
 
     constructor(){
 
+        this.initialized = false;
 
         this.running = false;
 
         this.timer = null;
 
+        this.heartbeatCount = 0;
 
-
-        this.forge =
-        new EvolutionController();
-
-
-
-        this.mercury =
-        createMercuryStreamCore({
-
-            bus:
-            mercuryAdapter,
-
-            chronicle:
-            mercuryAdapter.chronicle
-
-        });
+    }
 
 
 
-        eventBus.subscribe(
-            "sophia.signal",
-            (signal)=>{
+    init(){
+
+        if(this.initialized){
+            return;
+        }
 
 
-                stateStore.update(
-                    "signal",
-                    signal
-                );
+        this.initialized = true;
 
 
-                console.log(
-                    "[SOPHIA SIGNAL]",
-                    signal.action,
-                    signal.confidence
-                );
+        pipelineRouter.init();
 
 
-            }
+        console.log(
+            "[OMNIVEX RUNTIME INITIALIZED]"
         );
-
-
-        sophia.init();
-
-
 
     }
 
 
 
 
-
     getAgents(){
-
 
         return Object.fromEntries(
 
             Object.entries(agentRegistry)
-            .map(([name, agent])=>[
+
+            .map(([name,agent])=>[
 
                 name,
 
@@ -103,127 +105,33 @@ class OmnivexRuntime {
 
         );
 
-
     }
 
 
 
 
+    getGovernance(){
 
+        return {
 
+            intelligence:
+                "SOPHIA",
 
-    getMarket(){
+            authority:
+                "ELOHIM",
 
+            risk:
+                "AEGIS",
 
-        try{
+            execution:
+                "SAINT",
 
+            memory:
+                "CHRONICLE"
 
-            if(
-                this.mercury &&
-                typeof this.mercury.getState === "function"
-            ){
-
-                return this.mercury.getState();
-
-            }
-
-
-            return {};
-
-        }
-
-
-        catch(err){
-
-
-            console.error(
-                "[MERCURY STATE ERROR]",
-                err.message
-            );
-
-
-            return {};
-
-        }
-
+        };
 
     }
-
-
-
-
-
-
-
-    updateForge(){
-
-
-        try{
-
-
-            const evolution =
-            this.forge.evolve();
-
-
-
-            stateStore.update(
-
-                "forge",
-
-                {
-
-                    status:
-                    evolution.status ||
-                    "ACTIVE",
-
-
-                    generation:
-                    evolution.generation ||
-                    0,
-
-
-                    population:
-                    evolution.population ||
-                    0,
-
-
-                    lastEvolution:
-                    Date.now()
-
-                }
-
-            );
-
-
-        }
-
-
-        catch(err){
-
-
-            stateStore.update(
-
-                "forge",
-
-                {
-
-                    status:"ERROR",
-
-                    error:
-                    err.message
-
-                }
-
-            );
-
-
-        }
-
-
-    }
-
-
-
 
 
 
@@ -231,291 +139,122 @@ class OmnivexRuntime {
     heartbeat(){
 
 
-        try{
-
-
-            const agents =
-            this.getAgents();
+        this.heartbeatCount++;
 
 
 
-            const assets =
-            this.getMarket();
+        const runtimeState = {
 
 
-
-            const symbols =
-            Object.keys(
-                assets
-            );
+            runtime:
+                "OMNIVEX_OS_PRIME",
 
 
-
-            const primary =
-            symbols[0] ||
-            "BTC";
+            version:
+                "PRIME-16_AGENT_RUNTIME",
 
 
-
-            const primaryAsset =
-            assets[primary] ||
-            {};
+            heartbeat:
+                this.heartbeatCount,
 
 
-
-            const market = {
-
-
-                assets,
+            pipeline:
+                GOVERNANCE_CHAIN,
 
 
-                symbol:
-                primary,
+            governance:
+                this.getGovernance(),
 
 
-                price:
-                primaryAsset.price ||
-                0,
+            agents:
+                this.getAgents(),
 
 
-                volume:
-                primaryAsset.volume ||
-                0,
-
-
-                trend:
-                "LIVE_MARKET",
-
-
-                timestamp:
+            timestamp:
                 Date.now()
 
-
-            };
-
-
-
-            stateStore.update(
-                "market",
-                market
-            );
+        };
 
 
 
-            const existingSignal =
-            stateStore.get().signal ||
+        stateStore.update(
+
+            "agents",
+
+            runtimeState.agents
+
+        );
+
+
+        stateStore.update(
+
+            "runtime",
+
+            runtimeState
+
+        );
+
+
+
+
+        chronicle.record({
+
+            type:
+                "runtime.heartbeat",
+
+
+            source:
+                "OMNIVEX_RUNTIME",
+
+
+            ...runtimeState
+
+        });
+
+
+
+
+        pipelineRouter.publish(
+
+            "runtime.heartbeat",
+
             {
 
-                type:
-                "sophia.signal",
-
-                action:
-                "HOLD",
-
-                confidence:
-                0,
-
-                symbol:
-                market.symbol
-
-            };
-
-
-
-            const decision = {
-
-
-                type:
-                "elohim.decision",
-
-
-                action:
-                existingSignal.action === "BUY" ||
-                existingSignal.action === "SELL"
-                ?
-                existingSignal.action
-                :
-                "WAIT",
-
-
-                confidence:
-                existingSignal.confidence,
-
-
                 source:
-                "OMNIVEX_RUNTIME"
+                    "OMNIVEX_RUNTIME",
 
 
-            };
+                data:
+                    runtimeState
 
+            }
 
+        );
 
-            const risk = {
 
 
-                action:
-                "REDUCE",
 
+        console.log(
 
-                confidence:
-                existingSignal.confidence
+            "[OMNIVEX HEARTBEAT]",
 
+            this.heartbeatCount,
 
-            };
+            "|",
 
+            Object.keys(
+                runtimeState.agents
+            ).length,
 
+            "AGENTS ONLINE"
 
-            const execution = {
+        );
 
 
-                type:
-                "saint.execution",
 
-
-                action:
-                decision.action === "WAIT"
-                ?
-                "HOLD"
-                :
-                decision.action,
-
-
-                confidence:
-                decision.confidence,
-
-
-                symbol:
-                market.symbol,
-
-
-                price:
-                market.price,
-
-
-                ts:
-                market.timestamp
-
-
-            };
-
-
-
-            stateStore.update(
-                "decision",
-                decision
-            );
-
-
-            stateStore.update(
-                "risk",
-                risk
-            );
-
-
-            stateStore.update(
-                "execution",
-                execution
-            );
-
-
-            stateStore.update(
-                "agents",
-                agents
-            );
-
-
-
-            this.updateForge();
-
-
-
-            stateStore.online();
-
-
-
-
-            chronicle.record({
-
-                type:
-                "omnivex.heartbeat",
-
-
-                market,
-
-
-                signal:
-                existingSignal,
-
-
-                decision,
-
-
-                risk,
-
-
-                execution,
-
-
-                agents,
-
-
-                forge:
-                stateStore.get().forge
-
-
-            });
-
-
-
-
-            console.log(
-
-                "[OMNIVEX HEARTBEAT]",
-
-                "HB:",
-                stateStore.get().heartbeat,
-
-                "|",
-
-                decision.action,
-
-                "|",
-
-                execution.action,
-
-                "|",
-
-                stateStore.get().forge.status,
-
-                "|",
-
-                Object.keys(agents).length,
-
-                "AGENTS ONLINE"
-
-            );
-
-
-
-        }
-
-
-        catch(err){
-
-
-            console.error(
-                "[RUNTIME ERROR]",
-                err.message
-            );
-
-
-        }
-
+        return runtimeState;
 
     }
-
-
-
 
 
 
@@ -523,23 +262,23 @@ class OmnivexRuntime {
     start(interval=3000){
 
 
-        if(this.running)
+        if(this.running){
+
             return;
 
-
-
-        this.running=true;
-
-
-
-        console.log(
-            "[OMNIVEX RUNTIME ONLINE]"
-        );
+        }
 
 
 
-        this.timer =
-        setInterval(
+        this.init();
+
+
+
+        this.running = true;
+
+
+
+        this.timer = setInterval(
 
             ()=>this.heartbeat(),
 
@@ -548,19 +287,20 @@ class OmnivexRuntime {
         );
 
 
+
+        console.log(
+
+            "[OMNIVEX RUNTIME ONLINE]"
+
+        );
+
+
     }
 
 
 
 
-
-
-
     stop(){
-
-
-        this.running=false;
-
 
 
         if(this.timer){
@@ -572,16 +312,19 @@ class OmnivexRuntime {
         }
 
 
+        this.timer = null;
+
+
+        this.running = false;
+
 
         console.log(
+
             "[OMNIVEX RUNTIME STOPPED]"
+
         );
 
-
     }
-
-
-
 
 
 
@@ -589,11 +332,30 @@ class OmnivexRuntime {
     status(){
 
 
-        return stateStore.get();
+        return {
+
+            ...stateStore.get(),
+
+
+            runtime:
+                "OMNIVEX_OS_PRIME",
+
+
+            heartbeat:
+                this.heartbeatCount,
+
+
+            running:
+                this.running,
+
+
+            initialized:
+                this.initialized
+
+        };
 
 
     }
-
 
 
 }
@@ -601,5 +363,5 @@ class OmnivexRuntime {
 
 
 module.exports =
+    new OmnivexRuntime();
 
-module.exports = new OmnivexRuntime();

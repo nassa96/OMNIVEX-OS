@@ -1,29 +1,147 @@
 /**
- * OMNIVEX OS — EVENT CONTRACT (CANONICAL)
- * Every system MUST emit/consume this shape.
+ * OMNIVEX OS PRIME
+ *
+ * CANONICAL EVENT CONTRACT
+ *
+ * All subsystem communication
+ * MUST pass through this structure.
  */
 
-export function normalizeEvent(type, payload = {}) {
-  return {
-    id: crypto.randomUUID?.() || String(Date.now()),
-    ts: Date.now(),
+const crypto = require("crypto");
+
+
+function createEvent({
 
     type,
 
-    source: payload.source || "unknown",
+    source = "unknown",
 
-    data: payload.data || payload,
+    data = {},
 
-    meta: {
-      severity: payload.severity || "info",
-      route: payload.route || null
-    }
-  };
+    severity = "info",
+
+    route = [],
+
+    correlationId = null,
+
+    authority = null
+
+}) {
+
+
+    return {
+
+        id:
+            crypto.randomUUID(),
+
+
+        ts:
+            Date.now(),
+
+
+        type,
+
+
+        source,
+
+
+        data,
+
+
+        authority,
+
+
+        meta:{
+
+            severity,
+
+            route,
+
+            correlationId:
+                correlationId ||
+                crypto.randomUUID()
+
+        }
+
+    };
+
 }
 
-export function isValidEvent(event) {
-  if (!event) return false;
-  if (!event.type) return false;
-  if (!event.ts) return false;
-  return true;
+
+
+function normalizeEvent(event = {}){
+
+
+    return createEvent({
+
+        type:
+            event.type ||
+            "unknown",
+
+
+        source:
+            event.source ||
+            "unknown",
+
+
+        data:
+            event.data ||
+            event,
+
+
+        severity:
+            event.meta?.severity ||
+            "info",
+
+
+        route:
+            event.meta?.route ||
+            [],
+
+
+        correlationId:
+            event.meta?.correlationId,
+
+
+        authority:
+            event.authority ||
+            null
+
+    });
+
+
 }
+
+
+
+function isValidEvent(event){
+
+
+    return Boolean(
+
+        event &&
+
+        typeof event.id === "string" &&
+
+        typeof event.ts === "number" &&
+
+        typeof event.type === "string" &&
+
+        typeof event.source === "string"
+
+    );
+
+
+}
+
+
+
+module.exports = {
+
+    createEvent,
+
+    normalizeEvent,
+
+    isValidEvent
+
+};

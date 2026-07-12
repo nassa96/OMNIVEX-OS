@@ -1,21 +1,33 @@
-const fs = require("fs");
-const path = require("path");
+/**
+ * OMNIVEX OS PRIME
+ *
+ * CHRONICLE MEMORY ENGINE
+ */
+
+const fs =
+    require("fs");
+
+const path =
+    require("path");
 
 
 class ChronicleStore {
 
     constructor(){
 
-        this.file = path.join(
-            __dirname,
-            "chronicle.events.json"
-        );
+        this.file =
+            path.join(
+                __dirname,
+                "chronicle.events.json"
+            );
+
 
         this.events = [];
 
         this.load();
 
     }
+
 
 
     load(){
@@ -34,11 +46,12 @@ class ChronicleStore {
 
             }
 
-        }catch(err){
+        }
+        catch(error){
 
             console.error(
                 "[CHRONICLE LOAD ERROR]",
-                err.message
+                error.message
             );
 
             this.events = [];
@@ -48,44 +61,99 @@ class ChronicleStore {
     }
 
 
+
     save(){
 
         fs.writeFileSync(
+
             this.file,
+
             JSON.stringify(
                 this.events,
                 null,
                 2
             )
+
         );
 
     }
 
 
-    record(event){
+
+    record(event={}){
+
+
+        if(
+            !event.type
+        ){
+
+            throw new Error(
+                "CHRONICLE EVENT TYPE REQUIRED"
+            );
+
+        }
+
+
 
         const entry = {
 
+
             id:
-            this.events.length + 1,
+                this.events.length + 1,
+
 
             timestamp:
-            Date.now(),
 
-            ...event
+                event.timestamp ||
+                Date.now(),
+
+
+            type:
+                event.type,
+
+
+            source:
+
+                event.source ||
+                "unknown",
+
+
+            action:
+
+                event.action ||
+                null,
+
+
+            confidence:
+
+                event.confidence ||
+                null,
+
+
+            data:
+                event
 
         };
 
 
-        this.events.push(entry);
+
+        this.events.push(
+            entry
+        );
+
 
         this.save();
 
 
+
         console.log(
-            "[CHRONICLE]",
-            "EVENT STORED",
-            entry.id
+
+            "[CHRONICLE STORED]",
+
+            entry.id,
+
+            entry.type
+
         );
 
 
@@ -94,11 +162,13 @@ class ChronicleStore {
     }
 
 
+
     all(){
 
         return this.events;
 
     }
+
 
 
     latest(){
@@ -110,22 +180,49 @@ class ChronicleStore {
     }
 
 
-    replay(){
 
-        return this.events.map(
-            event => ({
-                timestamp:event.timestamp,
-                type:event.type,
-                action:event.action
-            })
-        );
+    replay(limit=100){
+
+        return this.events
+            .slice(-limit)
+            .map(
+                event=>({
+
+                    timestamp:
+                        event.timestamp,
+
+                    type:
+                        event.type,
+
+                    action:
+                        event.action,
+
+                    confidence:
+                        event.confidence
+
+                })
+            );
 
     }
 
 
+
+    dataset(window=500){
+
+        return {
+
+            events:
+                this.events.slice(-window)
+
+        };
+
+    }
+
+
+
     clear(){
 
-        this.events=[];
+        this.events = [];
 
         this.save();
 
@@ -135,4 +232,5 @@ class ChronicleStore {
 
 
 module.exports =
-new ChronicleStore();
+    new ChronicleStore();
+

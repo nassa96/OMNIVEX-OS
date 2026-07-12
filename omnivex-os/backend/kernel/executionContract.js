@@ -1,29 +1,57 @@
 /**
- * OMNIVEX OS — EXECUTION CONTRACT
- * Defines all enforceable trade actions
+ * OMNIVEX OS PRIME
+ *
+ * EXECUTION CONTRACT
  */
 
-export function createExecutionOrder({
-  asset,
-  side = "BUY",
-  size = 0,
-  confidence = 0,
-  source = "SAINT"
-}) {
-  return {
-    id: crypto.randomUUID?.() || String(Date.now()),
-    ts: Date.now(),
+const crypto = require("crypto");
 
-    type: "EXECUTION_ORDER",
+
+function createExecutionOrder({
 
     asset,
-    side, // BUY | SELL
 
-    size, // normalized allocation 0–1
-    confidence, // conviction score
+    side = "BUY",
 
-    source,
+    size = 0,
 
-    status: "PENDING"
-  };
+    confidence = 0,
+
+    source = "SAINT"
+
+}){
+
+
+    return {
+
+        id:
+            crypto.randomUUID(),
+
+        ts:
+            Date.now(),
+
+        type:
+            "EXECUTION_ORDER",
+
+        asset,
+
+        side,
+
+        size,
+
+        confidence,
+
+        source,
+
+        status:
+            "PENDING"
+
+    };
+
+
 }
+
+
+module.exports = {
+    createExecutionOrder
+};

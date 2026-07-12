@@ -1,26 +1,52 @@
 /**
- * OMNIVEX OS — SIGNAL CONTRACT
- * Standardizes all alpha / meme / market signals
+ * OMNIVEX OS PRIME
+ *
+ * SIGNAL CONTRACT
  */
 
-export function createSignal({
-  type,
-  strength = 0,
-  asset = "UNKNOWN",
-  source = "SOPHIA",
-  metadata = {}
-}) {
-  return {
-    id: crypto.randomUUID?.() || String(Date.now()),
-    ts: Date.now(),
+const crypto = require("crypto");
 
-    type, // MEME | MARKET | EXECUTION | RISK
-    asset,
 
-    strength, // 0 → 1 normalized conviction
+function createSignal({
 
-    source,
+    type,
 
-    metadata
-  };
+    strength = 0,
+
+    asset = "UNKNOWN",
+
+    source = "SOPHIA",
+
+    metadata = {}
+
+}){
+
+    return {
+
+        id:
+            crypto.randomUUID(),
+
+        ts:
+            Date.now(),
+
+        type,
+
+        asset,
+
+        strength,
+
+        confidence:
+            strength,
+
+        source,
+
+        metadata
+
+    };
+
 }
+
+
+module.exports = {
+    createSignal
+};

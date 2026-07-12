@@ -1,263 +1,133 @@
 /**
+ * FILE:
+ * backend/kernel/runtime/runtimeController.js
+ *
  * OMNIVEX OS PRIME
  *
- * DETERMINISTIC RUNTIME CONTROLLER
- *
- * SINGLE HEARTBEAT PIPELINE
+ * Runtime orchestration controller
  */
 
-const Mercury =
-  require("../../core/mercury");
+const eventBus =
+    require("../eventBus");
 
-const sophia =
-  require("../../agents/sophia/sophiaEngine");
-
-const saint =
-  require("../../agents/saint/saintEngine");
-
-const chronicle =
-  require("../../chronicle/core/chronicleEngine");
 
 const runtimeState =
-  require("./runtimeState");
+    require("./runtimeState");
 
 
-const mercury =
-  new Mercury();
 
+function handleDecision(decision){
 
 
-async function process(){
+    eventBus.publish(
 
+        "aurin.evaluate",
 
-  try {
+        {
 
+            source:
+                "ELOHIM",
 
-    /*
-    =========================
-    HEARTBEAT
-    =========================
-    */
+            data:
+                decision
 
-
-    runtimeState.heartbeat();
-
-
-
-    /*
-    =========================
-    MERCURY
-    =========================
-    */
-
-
-    const market =
-      await mercury.scan();
-
-
-
-    if(!market){
-
-      throw new Error(
-        "NO MARKET DATA"
-      );
-
-    }
-
-
-
-    /*
-    =========================
-    SOPHIA
-    =========================
-    */
-
-
-    const signal =
-      sophia.generateSignal(
-        market
-      );
-
-
-
-    /*
-    =========================
-    ELOHIM
-    =========================
-    */
-
-
-    const decision = {
-
-      type:
-        "elohim.decision",
-
-      action:
-
-        signal.confidence >= .70
-
-        ? "EXECUTE"
-
-        :
-
-        signal.confidence >= .45
-
-        ? "WAIT"
-
-        :
-
-        "HOLD",
-
-
-      confidence:
-        signal.confidence,
-
-
-      source:
-        "OMNIVEX_RUNTIME"
-
-    };
-
-
-
-    /*
-    =========================
-    AEGIS
-    =========================
-    */
-
-
-    const risk = {
-
-      action:
-
-        signal.confidence >= .50
-
-        ? "APPROVE"
-
-        :
-
-        "HOLD",
-
-
-      confidence:
-        signal.confidence
-
-    };
-
-
-
-    /*
-    =========================
-    SAINT
-    =========================
-    */
-
-
-    const execution =
-      saint.executeSignal(
-        signal,
-        market
-      );
-
-
-
-    /*
-    =========================
-    UPDATE CENTRAL STATE
-    =========================
-    */
-
-
-    runtimeState.update({
-
-      status:
-        "ONLINE",
-
-      market,
-
-      signal,
-
-      decision,
-
-      risk,
-
-      execution
-
-    });
-
-
-
-    /*
-    =========================
-    MEMORY
-    =========================
-    */
-
-
-    chronicle.record(
-
-      runtimeState.get()
+        }
 
     );
-
-
-
-    const state =
-      runtimeState.get();
-
-
-
-    console.log(
-
-      "[OMNIVEX HEARTBEAT]",
-
-      "HB:",
-      state.heartbeat,
-
-      "|",
-
-      decision.action,
-
-      "|",
-
-      execution.action
-
-    );
-
-
-    return state;
-
-
-
-  }
-
-
-  catch(err){
-
-
-    console.error(
-
-      "[RUNTIME CONTROLLER ERROR]",
-
-      err.message
-
-    );
-
-
-    return runtimeState.get();
-
-
-  }
 
 
 }
 
 
 
-function getState(){
+function handleGovernance(approval){
 
-  return runtimeState.get();
+
+    eventBus.publish(
+
+        "aegis.evaluate",
+
+        {
+
+            source:
+                "RUNTIME_CONTROLLER",
+
+            signal:
+                approval
+
+        }
+
+    );
+
+
+}
+
+
+
+function init(){
+
+
+    eventBus.subscribe(
+
+        "elohim.decision",
+
+        (event)=>{
+
+
+            handleDecision(
+
+                event.data ||
+                event
+
+            );
+
+
+        }
+
+    );
+
+
+
+    eventBus.subscribe(
+
+        "governance.request",
+
+        (event)=>{
+
+
+            handleGovernance(
+
+                event.data ||
+                event
+
+            );
+
+
+        }
+
+    );
+
+
+
+    console.log(
+
+        "[RUNTIME CONTROLLER ONLINE]"
+
+    );
+
+}
+
+
+
+function status(){
+
+
+    return {
+
+        status:
+            "ONLINE"
+
+    };
 
 }
 
@@ -265,8 +135,12 @@ function getState(){
 
 module.exports = {
 
-  process,
+    init,
 
-  getState
+    status,
+
+    handleDecision,
+
+    handleGovernance
 
 };

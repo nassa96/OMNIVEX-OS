@@ -1,86 +1,47 @@
-const agents = {
+/**
+ * OMNIVEX OS PRIME
+ *
+ * RUNTIME AGENT REGISTRY
+ *
+ * This file does not define agents.
+ * It exposes the canonical architecture registry
+ * as runtime state.
+ *
+ * Source of truth:
+ * backend/kernel/registry/canonicalAgents.js
+ */
 
-STREAMCORE:{
-    status:"ONLINE",
-    role:"market_ingestion"
-},
+const canonicalAgents =
+    require("../registry/canonicalAgents");
 
-MERCURY:{
-    status:"ONLINE",
-    role:"data_normalization"
-},
 
-CHRONICLE:{
-    status:"ONLINE",
-    role:"memory_replay"
-},
+const agents = {};
 
-SOPHIA:{
-    status:"ONLINE",
-    role:"market_intelligence"
-},
 
-ORACLE:{
-    status:"ONLINE",
-    role:"external_context"
-},
+for(const [name, definition] of Object.entries(canonicalAgents)){
 
-REGIME:{
-    status:"ONLINE",
-    role:"market_classification"
-},
+    agents[name] = {
 
-OPPORTUNITY_LAB:{
-    status:"ONLINE",
-    role:"strategy_discovery"
-},
+        status:"ONLINE",
 
-FORGE:{
-    status:"ONLINE",
-    role:"strategy_simulation"
-},
+        role:
+            definition.role,
 
-ELOHIM:{
-    status:"ONLINE",
-    role:"orchestration"
-},
+        layer:
+            definition.layer,
 
-AEGIS:{
-    status:"ONLINE",
-    role:"risk_governance"
-},
+        owner:
+            definition.owner,
 
-SAINT:{
-    status:"ONLINE",
-    role:"execution"
-},
+        heartbeat:
+            "ONLINE",
 
-LEDGER:{
-    status:"ONLINE",
-    role:"accounting"
-},
+        registered:
+            Date.now()
 
-SENTINEL:{
-    status:"ONLINE",
-    role:"system_monitoring"
-},
+    };
 
-NEXUS:{
-    status:"ONLINE",
-    role:"capital_allocation"
-},
-
-PROMETHEUS:{
-    status:"ONLINE",
-    role:"research_evolution"
-},
-
-ATLAS:{
-    status:"ONLINE",
-    role:"command_interface"
 }
-
-};
 
 
 module.exports = agents;

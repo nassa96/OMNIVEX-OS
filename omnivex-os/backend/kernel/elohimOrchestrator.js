@@ -3,24 +3,24 @@
  *
  * ELOHIM ORCHESTRATOR
  *
- * Decision authority layer
+ * Decision authority layer.
  *
- * Flow:
- *
+ * Receives:
  * SOPHIA SIGNAL
- *      |
- *      v
- * ELOHIM DECISION
- *      |
- *      v
- * AEGIS / SAINT
  *
+ * Emits:
+ * ELOHIM DECISION
+ *
+ * No execution authority.
  */
+
 
 function createElohimOrchestrator({
 
     bus,
+
     chronicle,
+
     ledger
 
 } = {}){
@@ -29,111 +29,156 @@ function createElohimOrchestrator({
     let lastDecision = null;
 
 
+
     const state = {
 
-        mode:"LIVE",
+        mode:
+            "LIVE",
 
-        decisions:0,
+        decisions:
+            0,
 
-        timestamp:null
+        timestamp:
+            null
 
     };
 
 
 
-    function evaluate(signal){
+    function normalize(event){
+
+        if(
+            event &&
+            event.data
+        ){
+
+            return event.data;
+
+        }
+
+
+        return event;
+
+    }
+
+
+
+
+    function evaluate(input){
+
+
+        const signal =
+            normalize(input);
+
 
 
         if(!signal){
 
-            return {
+            return emitDecision({
 
-                type:"elohim.decision",
+                action:
+                    "WAIT",
 
-                action:"WAIT",
+                confidence:
+                    0
 
-                confidence:0,
-
-                source:"ELOHIM_RUNTIME"
-
-            };
+            });
 
         }
 
 
 
         const confidence =
-        Number(
-            signal.confidence || 0
-        );
+            Number(
+                signal.confidence || 0
+            );
 
 
 
-        let action="WAIT";
+        let action =
+            "HOLD";
 
 
 
         if(
-            signal.action==="BUY" &&
-            confidence >=0.65
+            signal.action === "BUY" &&
+            confidence >= 0.65
         ){
 
-            action="BUY";
+            action =
+                "BUY";
 
         }
 
 
 
         else if(
-            signal.action==="SELL" &&
-            confidence >=0.65
+            signal.action === "SELL" &&
+            confidence >= 0.65
         ){
 
-            action="SELL";
+            action =
+                "SELL";
 
         }
 
 
 
-        else {
+        return emitDecision({
 
-            action="HOLD";
+            action,
 
-        }
+            confidence,
+
+            symbol:
+                signal.symbol ||
+                "BTC"
+
+        });
 
 
+
+    }
+
+
+
+
+    function emitDecision(data){
 
 
         const decision = {
 
 
             type:
-            "elohim.decision",
+                "elohim.decision",
 
 
-            action,
+            action:
+                data.action,
 
 
-            confidence,
+            confidence:
+                data.confidence,
 
 
             symbol:
-            signal.symbol || "BTC",
+                data.symbol ||
+                "BTC",
 
 
             source:
-            "ELOHIM_RUNTIME",
+                "ELOHIM",
 
 
             timestamp:
-            Date.now()
+                Date.now()
 
         };
 
 
 
         lastDecision =
-        decision;
+            decision;
 
 
 
@@ -141,40 +186,27 @@ function createElohimOrchestrator({
 
 
         state.timestamp =
-        Date.now();
-
+            Date.now();
 
 
 
         if(bus){
 
+            bus.publish(
 
-            if(typeof bus.publish==="function"){
+                "elohim.decision",
 
-                bus.publish(
-                    "elohim.decision",
-                    decision
-                );
+                decision
 
-            }
-
-            else if(typeof bus.emit==="function"){
-
-                bus.emit(
-                    "elohim.decision",
-                    decision
-                );
-
-            }
+            );
 
         }
 
 
 
-
         if(
             chronicle &&
-            typeof chronicle.record==="function"
+            typeof chronicle.record === "function"
         ){
 
             chronicle.record(
@@ -188,7 +220,9 @@ function createElohimOrchestrator({
         console.log(
 
             "[ELOHIM DECISION]",
+
             decision.action,
+
             decision.confidence
 
         );
@@ -197,9 +231,7 @@ function createElohimOrchestrator({
 
         return decision;
 
-
     }
-
 
 
 
@@ -207,58 +239,27 @@ function createElohimOrchestrator({
     function init(){
 
 
-        if(!bus)
+        if(!bus){
             return;
-
-
-
-        if(typeof bus.subscribe==="function"){
-
-
-            bus.subscribe(
-
-                "sophia.signal",
-
-                (signal)=>{
-
-                    evaluate(
-                        signal
-                    );
-
-                }
-
-            );
-
-
         }
 
 
-        else if(typeof bus.on==="function"){
 
+        bus.subscribe(
 
-            bus.on(
+            "sophia.signal",
 
-                "sophia.signal",
+            evaluate
 
-                (signal)=>{
-
-                    evaluate(
-                        signal
-                    );
-
-                }
-
-            );
-
-
-        }
+        );
 
 
 
         console.log(
-            "[ELOHIM ONLINE]"
-        );
 
+            "[ELOHIM ONLINE]"
+
+        );
 
     }
 
@@ -275,7 +276,8 @@ function createElohimOrchestrator({
         evaluate,
 
 
-        decide:evaluate,
+        decide:
+            evaluate,
 
 
         getDecision(){
@@ -298,5 +300,6 @@ function createElohimOrchestrator({
 }
 
 
+
 module.exports =
-createElohimOrchestrator;
+    createElohimOrchestrator;
